@@ -6,7 +6,7 @@
       style="width: 200px; height: 200px"
     />
     <div>
-      <q-btn label = "Testar API" color="primary" @click="buscarMensagem"/>
+      <q-btn label = "Testar Api" color="primary" @click="buscarMensagem"/>
       <div v-if="mensagem" style="margin-top: 20px">
         {{ mensagem }}
       </div>

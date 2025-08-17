@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: joao
+      POSTGRES_PASSWORD: admin2025
+      POSTGRES_DB: pwadb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  backend:
+    build: ./backend
+    container_name: backend_app
+    ports:
+      - "3000:3000"
+    environment:
+      DB_USER: joao
+      DB_PASSWORD: admin2025
+      DB_NAME: pwadb
+      DB_HOST: db
+      DB_PORT: 5432
+      NODE_ENV: development
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
+      NODEMON_LEGACY_WATCH: "true"
+    volumes:
+      - ./backend:/app
+      - backend_node_modules:/app/node_modules
+    command: npm run dev
+    depends_on:
+      - db
+    networks:
+      - app-network
+    
+  frontend:
+    build: ./frontend
+    container_name: frontend_app
+    ports:
+      - "9000:9000"
+    environment:
+      NODE_ENV: development
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    command: npx quasar dev
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+  backend_node_modules:
+  frontend_node_modules:
+  
+networks:
+  app-network:
+    driver: bridge
