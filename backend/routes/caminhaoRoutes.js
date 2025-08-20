@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const caminhaController = require('../controllers/caminhaoController');
+const caminhaoController = require('../controllers/caminhaoController');
 
-router.post('/', caminhaController.criarCaminhao);
+router.post('/', caminhaoController.criarCaminhao);
 
 module.exports = router;

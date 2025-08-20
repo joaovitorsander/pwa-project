@@ -3,8 +3,16 @@ const CaminhaoModel = require('../models/caminhaoModel');
 exports.criarCaminhao = async (req, res) => {
     try {
         const novo = await CaminhaoModel.inserirCaminhao(req.body);
-        res.status(201).json(novo);
+        res.status(201).json({
+            ok: true,
+            message: 'Caminhão cadastrado com sucesso.',
+            caminhao: novo
+        });
     } catch (error) {
-        res.status(500).json({ error: 'Erro ao cadastrar caminhão: ' + error.message });    
+        res.status(500).json({
+            ok: false,
+            message: 'Erro ao cadastrar caminhão.',
+            error: error.message
+        });    
     }
 };

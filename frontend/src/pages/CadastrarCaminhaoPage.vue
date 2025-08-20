@@ -4,7 +4,7 @@
       <q-input v-model="form.placa" label="Placa" required />
       <q-input v-model="form.modelo" label="Modelo" required />
       <q-input v-model="form.ano" type="number" label="Ano" required />
-      <q-input v-model="form.quantidade_eixos" type="number" label="Quantidade de eixos" required/>
+      <q-input v-model="form.quantidade_eixos" type="number" label="Quantidade de eixos" required />
       <q-btn label="Cadastrar Caminhão" type="submit" color="primary" />
     </q-form>
 
@@ -22,7 +22,7 @@ export default {
         placa: '',
         modelo: '',
         ano: '',
-        quantidade_eixos: 0
+        quantidade_eixos: ''
       },
       mensagem: ''
     };
@@ -31,11 +31,23 @@ export default {
     async handleSubmit() {
       try {
         const response = await api.post('/caminhoes', this.form);
-        this.mensagem = 'Caminhão cadastrado com sucesso.';
-        this.form = { placa: '', modelo: '', ano: '', quantidade_eixos: 0 }
+        if (response.status === 201) {
+          this.mensagem = 'Caminhão cadastrado com sucesso.';
+          this.form = { placa: '', modelo: '', ano: '', quantidade_eixos: '' }
+        }
       } catch (error) {
-        this.mensagem = 'Erro ao cadastrar caminhão.';
-        console.log(error);
+        if (error.response) {
+          console.error('Erro do servidor:', error.response.status);
+          console.error('Mensagem:', error.response.data.message);
+
+          this.mensagem = error.response.data.message || 'Erro ao cadastrar caminhão.';
+        } else if (error.request) {
+          console.error('Sem resposta do servidor');
+          this.mensagem = 'Servidor não respondeu.';
+        } else {
+          console.error('Erro desconhecido:', error.message);
+          this.mensagem = 'Erro inesperado.';
+        }
       }
     }
   }
