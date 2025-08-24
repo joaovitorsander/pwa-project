@@ -1,23 +1,22 @@
 <template>
   <q-layout view="lHh Lpr lFf">
+    <!-- Cabeçalho -->
     <q-header elevated>
-      <q-toolbar>
-        <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
-
-        <q-toolbar-title> Quasar App </q-toolbar-title>
-
-        <div>Quasar v{{ $q.version }}</div>
+      <q-toolbar class="bg-white text-black column items-center justify-center">
+        <div class="text-h6 text-weight-bold text-green-7">FreteCalc</div>
+        <div class="text-caption">Calculadora de Fretes para Caminhoneiros</div>
       </q-toolbar>
+
+      <!-- Tabs de Navegação -->
+      <q-tabs v-model="tab" align="justify" class="bg-grey-2" active-color="green-7" inactive-color="black"
+        indicator-color="green-7">
+        <q-route-tab name="calcular" label="Calcular" to="/" class="text-black"/>
+        <q-route-tab name="caminhoes" label="Caminhões" to="/cadastrar-caminhao" class="text-black"/>
+        <q-route-tab name="historico" label="Histórico" to="/historico" class="text-black"/>
+      </q-tabs>
     </q-header>
 
-    <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
-      <q-list>
-        <q-item-label header> Essential Links </q-item-label>
-
-        <EssentialLink v-for="link in linksList" :key="link.title" v-bind="link" />
-      </q-list>
-    </q-drawer>
-
+    <!-- Área de páginas -->
     <q-page-container>
       <router-view />
     </q-page-container>
@@ -26,56 +25,6 @@
 
 <script setup>
 import { ref } from 'vue'
-import EssentialLink from 'components/EssentialLink.vue'
 
-const linksList = [
-  {
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev',
-  },
-  {
-    title: 'Github',
-    caption: 'github.com/quasarframework',
-    icon: 'code',
-    link: 'https://github.com/quasarframework',
-  },
-  {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
-    icon: 'chat',
-    link: 'https://chat.quasar.dev',
-  },
-  {
-    title: 'Forum',
-    caption: 'forum.quasar.dev',
-    icon: 'record_voice_over',
-    link: 'https://forum.quasar.dev',
-  },
-  {
-    title: 'Twitter',
-    caption: '@quasarframework',
-    icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev',
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
-    icon: 'public',
-    link: 'https://facebook.quasar.dev',
-  },
-  {
-    title: 'Quasar Awesome',
-    caption: 'Community Quasar projects',
-    icon: 'favorite',
-    link: 'https://awesome.quasar.dev',
-  },
-]
-
-const leftDrawerOpen = ref(false)
-
-function toggleLeftDrawer() {
-  leftDrawerOpen.value = !leftDrawerOpen.value
-}
+const tab = ref('calcular')
 </script>
