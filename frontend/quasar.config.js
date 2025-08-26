@@ -2,7 +2,6 @@
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file
 
 import { defineConfig } from '#q-app/wrappers'
-import { env } from 'node:process'
 import { fileURLToPath } from 'node:url'
 
 export default defineConfig((ctx) => {
@@ -43,10 +42,6 @@ export default defineConfig((ctx) => {
       // vueRouterBase,
       // vueDevtools,
       // vueOptionsAPI: false,
-
-      env: {
-        VITE_GOOGLE_MAPS_API_KEY: process.env.VITE_GOOGLE_MAPS_API_KEY
-      },
 
       // rebuildCache: true, // rebuilds Vite/linter/etc cache on startup
 
