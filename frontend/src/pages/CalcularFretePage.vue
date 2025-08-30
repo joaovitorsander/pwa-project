@@ -97,10 +97,11 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import MapaComponent from 'src/components/MapaComponent.vue'
-import { calcularRotaGoogle } from 'src/services/directions.js' // Importa o serviço .js
+import { calcularRotaGoogle } from 'src/services/directions.js'
+import { BuscarTiposCarga } from 'src/services/calcularFreteService'
 
 const $q = useQuasar()
 const mapComponentRef = ref(null)
@@ -121,11 +122,20 @@ const veiculos = [
   { label: 'Caminhão Truck', value: 'truck' },
   { label: 'Carreta Simples', value: 'carreta_simples' },
 ]
-const tiposCarga = [
-  { label: 'Granel Sólido', value: 'granel_solido' },
-  { label: 'Granel Líquido', value: 'granel_liquido' },
-  { label: 'Carga Geral', value: 'carga_geral' },
-]
+const tiposCarga = ref([])
+
+const carregarTiposCarga = async () => {
+  const dados = await BuscarTiposCarga()
+
+  tiposCarga.value = dados.map((item) => ({
+    label: item.nome,
+    value: item.id_tipo_carga,
+  }))
+}
+
+onMounted(() => {
+  carregarTiposCarga()
+})
 
 const calcularFrete = async () => {
   if (!form.origem || !form.destino) {

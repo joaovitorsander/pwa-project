@@ -1,6 +1,6 @@
 const db = require('../db');
 
-async function inserirCaminhao({placa, modelo, ano, quantidade_eixos}) {
+async function InserirCaminhao({placa, modelo, ano, quantidade_eixos}) {
     const query = 'INSERT INTO CAMINHOES (PLACA, MODELO, ANO, QUANTIDADE_EIXOS) VALUES ($1, $2, $3, $4) RETURNING *';
     const values = [placa, modelo, ano, quantidade_eixos];
     const { rows } = await db.query(query, values);
@@ -8,5 +8,5 @@ async function inserirCaminhao({placa, modelo, ano, quantidade_eixos}) {
 };
 
 module.exports = {
-    inserirCaminhao
+    InserirCaminhao
 };
