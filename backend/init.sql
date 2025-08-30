@@ -3,23 +3,25 @@ CREATE TYPE coef_tipo AS ENUM ('CCD','CC');      -- CCD = R$/km ; CC = R$
 CREATE TYPE unidade_monet AS ENUM ('RS_KM','RS');
 
 -- 1) Usuários
-CREATE TABLE usuarios (
+/*CREATE TABLE usuarios (
   id         SERIAL PRIMARY KEY,
   nome       TEXT NOT NULL,
   email      TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
+);*/
 
 -- 2) Caminhões
 CREATE TABLE caminhoes (
-  id                SERIAL PRIMARY KEY,
-  usuario_id        INT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
-  placa             TEXT,
-  modelo            TEXT,
-  ano               INT,
-  quantidade_eixos  INT,
-  consumo_km_por_l  NUMERIC(10,3),
-  created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+  id                         SERIAL PRIMARY KEY,
+  --usuario_id               INT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  placa                      TEXT,
+  modelo                     TEXT,
+  ano                        INT,
+  quantidade_eixos           INT,
+  consumo_km_por_l_vazio     NUMERIC(10,2),
+  consumo_km_por_l_carregado NUMERIC(10,2),
+  capacidade_ton             INT,
+  created_at                 TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- 3) Catálogos
@@ -62,7 +64,7 @@ CREATE INDEX idx_coef_lookup
 -- 6) Cálculos (histórico)
 CREATE TABLE calculos (
   id                      BIGSERIAL PRIMARY KEY,
-  usuario_id              INT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  --usuario_id              INT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
   caminhao_id             INT REFERENCES caminhoes(id) ON DELETE SET NULL,
   created_at              TIMESTAMPTZ NOT NULL DEFAULT now(),
 
