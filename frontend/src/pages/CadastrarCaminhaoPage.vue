@@ -6,12 +6,64 @@
         <div class="text-subtitle1 text-weight-medium">Meus Caminhões</div>
       </div>
       <div>
-        <q-btn v-if="modoLista" color="green-6" icon="add" label="Adicionar" no-caps @click="abrirFormularioCadastro" />
-        <q-btn v-else color="grey-6" outline icon="close" label="Cancelar" no-caps @click="fecharFormulario" />
+        <q-btn
+          v-if="modoLista"
+          color="green-6"
+          icon="add"
+          label="Adicionar"
+          no-caps
+          @click="abrirFormularioCadastro"
+        />
+        <q-btn
+          v-else
+          color="grey-6"
+          outline
+          icon="close"
+          label="Cancelar"
+          no-caps
+          @click="fecharFormulario"
+        />
       </div>
     </div>
 
     <div v-if="modoLista">
+      <q-card flat bordered class="q-mb-md">
+        <q-card-section>
+          <q-form @submit.prevent="carregarCaminhoes" class="row items-start q-col-gutter-md">
+            <div class="col">
+              <q-input
+                v-model="filtros.termo"
+                :label="placeholderPesquisa"
+                :type="tipoInputPesquisa"
+                dense
+                outlined
+                color="green-6"
+              >
+                <template v-slot:prepend>
+                  <q-icon name="search" />
+                </template>
+              </q-input>
+            </div>
+
+            <div class="col-xs-12 col-sm-auto" style="min-width: 130px">
+              <q-select
+                v-model="filtros.campo"
+                :options="opcoesDeFiltro"
+                label="Filtrar por"
+                dense
+                outlined
+                emit-value
+                map-options
+                color="green-6"
+              />
+            </div>
+
+            <div class="col-auto">
+              <q-btn label="Buscar" color="green-6" type="submit" no-caps class="q-px-md" />
+            </div>
+          </q-form>
+        </q-card-section>
+      </q-card>
       <q-skeleton v-if="carregando" type="rect" class="q-mb-md" height="110px" />
       <q-skeleton v-if="carregando" type="rect" class="q-mb-md" height="110px" />
 
@@ -46,7 +98,14 @@
             </div>
 
             <div>
-              <q-btn flat round dense color="grey-7" icon="edit" @click="abrirFormularioEdicao(c)" />
+              <q-btn
+                flat
+                round
+                dense
+                color="grey-7"
+                icon="edit"
+                @click="abrirFormularioEdicao(c)"
+              />
               <q-btn flat round dense color="red-5" icon="delete" @click="confirmarExclusao(c)" />
             </div>
           </div>
@@ -62,36 +121,80 @@
 
         <q-separator />
 
-        <q-card-section>
+        <q-card-section class="q-pa-md">
           <q-form @submit.prevent="salvar" class="q-gutter-md">
-            <q-input v-model="form.modelo" label="Modelo *" placeholder="Ex: Scania R450, Volvo FH540"
-              :rules="[(val) => !!val || 'Informe o modelo']" filled />
-            <q-input v-model="form.placa" label="Placa *" placeholder="ABC-1234"
-              :rules="[(val) => !!val || 'Informe a placa']" filled />
+            <q-input
+              v-model="form.modelo"
+              label="Modelo *"
+              placeholder="Ex: Scania R450, Volvo FH540"
+              :rules="[(val) => !!val || 'Informe o modelo']"
+              filled
+            />
+            <q-input
+              v-model="form.placa"
+              label="Placa *"
+              placeholder="ABC-1234"
+              :rules="[(val) => !!val || 'Informe a placa']"
+              filled
+            />
+
             <div class="row q-col-gutter-md">
               <div class="col-12 col-md-6">
-                <q-input v-model.number="form.ano" type="number" label="Ano *"
-                  :rules="[(val) => !!val || 'Informe o ano']" filled />
+                <q-input
+                  v-model.number="form.ano"
+                  type="number"
+                  label="Ano *"
+                  :rules="[(val) => !!val || 'Informe o ano']"
+                  filled
+                />
               </div>
               <div class="col-12 col-md-6">
-                <q-input v-model.number="form.quantidade_eixos" type="number" label="Quantidade de Eixos *"
-                  :rules="[(val) => !!val || 'Informe os eixos']" filled />
-              </div>
-              <div class="col-12 col-md-6">
-                <q-input v-model.number="form.consumo_km_por_l_vazio" type="number" step="0.1"
-                  label="Consumo (km/L) vazio*" :rules="[(val) => !!val || 'Informe o consumo']" filled />
-              </div>
-              <div class="col-12 col-md-6">
-                <q-input v-model.number="form.consumo_km_por_l_carregado" type="number" step="0.1"
-                  label="Consumo (km/L) carregado*" :rules="[(val) => !!val || 'Informe o consumo']" filled />
+                <q-input
+                  v-model.number="form.quantidade_eixos"
+                  type="number"
+                  label="Quantidade de Eixos *"
+                  :rules="[(val) => !!val || 'Informe os eixos']"
+                  filled
+                />
               </div>
             </div>
+
             <div class="row q-col-gutter-md">
               <div class="col-12 col-md-6">
-                <q-input v-model.number="form.capacidade_ton" type="number" step="0.1" label="Capacidade (ton) *"
-                  :rules="[(val) => !!val || 'Informe a capacidade']" filled />
+                <q-input
+                  v-model.number="form.consumo_km_por_l_vazio"
+                  type="number"
+                  step="0.1"
+                  label="Consumo (km/L) vazio*"
+                  :rules="[(val) => !!val || 'Informe o consumo']"
+                  filled
+                />
+              </div>
+              <div class="col-12 col-md-6">
+                <q-input
+                  v-model.number="form.consumo_km_por_l_carregado"
+                  type="number"
+                  step="0.1"
+                  label="Consumo (km/L) carregado*"
+                  :rules="[(val) => !!val || 'Informe o consumo']"
+                  filled
+                />
               </div>
             </div>
+
+            <div class="row q-col-gutter-md">
+              <div class="col-12 col-md-6">
+                <q-input
+                  v-model.number="form.capacidade_ton"
+                  type="number"
+                  step="0.1"
+                  label="Capacidade (ton) *"
+                  :rules="[(val) => !!val || 'Informe a capacidade']"
+                  filled
+                />
+              </div>
+            </div>
+
             <div class="row justify-end q-gutter-sm q-mt-md">
               <q-btn :label="labelBotaoSalvar" type="submit" color="green-6" no-caps />
             </div>
@@ -124,9 +227,25 @@ export default {
       carregando: false,
       caminhoes: [],
       form: { ...formVazio },
+      filtros: {
+        termo: '',
+        campo: 'modelo',
+      },
+      opcoesDeFiltro: [
+        { label: 'Modelo', value: 'modelo' },
+        { label: 'Placa', value: 'placa' },
+        { label: 'Ano', value: 'ano' },
+      ],
     }
   },
   computed: {
+    placeholderPesquisa() {
+      const selecionado = this.opcoesDeFiltro.find((opt) => opt.value === this.filtros.campo)
+      return `Pesquisar por ${selecionado.label}...`
+    },
+    tipoInputPesquisa() {
+      return this.filtros.campo === 'ano' ? 'number' : 'text'
+    },
     modoEdicao() {
       return this.form.id !== null
     },
@@ -153,7 +272,16 @@ export default {
 
     async carregarCaminhoes() {
       this.carregando = true
-      const result = await caminhaoService.buscarTodosCaminhoes()
+      const filtrosParaApi = {}
+
+      const campo = this.filtros.campo
+      const termo = this.filtros.termo
+
+      if (termo) {
+        filtrosParaApi[campo] = termo
+      }
+
+      const result = await caminhaoService.buscarCaminhoes(filtrosParaApi)
 
       if (result.success) {
         this.caminhoes = result.data

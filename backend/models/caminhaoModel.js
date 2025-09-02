@@ -1,17 +1,58 @@
 const db = require("../db");
 
-async function InserirCaminhao({ placa, modelo, ano, quantidade_eixos, consumo_km_por_l_vazio, consumo_km_por_l_carregado, capacidade_ton }) {
+async function InserirCaminhao({
+  placa,
+  modelo,
+  ano,
+  quantidade_eixos,
+  consumo_km_por_l_vazio,
+  consumo_km_por_l_carregado,
+  capacidade_ton,
+}) {
   const query =
     "INSERT INTO CAMINHOES (PLACA, MODELO, ANO, QUANTIDADE_EIXOS, CONSUMO_KM_POR_L_VAZIO, CONSUMO_KM_POR_L_CARREGADO, CAPACIDADE_TON) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *";
-  const values = [placa, modelo, ano, quantidade_eixos, consumo_km_por_l_vazio, consumo_km_por_l_carregado, capacidade_ton];
+  const values = [
+    placa,
+    modelo,
+    ano,
+    quantidade_eixos,
+    consumo_km_por_l_vazio,
+    consumo_km_por_l_carregado,
+    capacidade_ton,
+  ];
   const { rows } = await db.query(query, values);
   return rows[0];
 }
 
-async function BuscarCaminhoes() {
-  const query =
-    "SELECT caminhoes.id, caminhoes.modelo, caminhoes.placa, caminhoes.ano, caminhoes.quantidade_eixos, caminhoes.consumo_km_por_l_vazio, caminhoes.consumo_km_por_l_carregado, capacidade_ton FROM caminhoes";
-  const { rows } = await db.query(query);
+async function BuscarCaminhoes(filtros = {}) {
+  let query =
+    "SELECT id, modelo, placa, ano, quantidade_eixos, consumo_km_por_l_vazio, consumo_km_por_l_carregado, capacidade_ton FROM caminhoes";
+
+  const values = [];
+  const whereClauses = [];
+
+  if (filtros.placa) {
+    values.push(`%${filtros.placa}%`);
+    whereClauses.push(`placa ILIKE $${values.length}`);
+  }
+
+  if (filtros.modelo) {
+    values.push(`%${filtros.modelo}%`);
+    whereClauses.push(`modelo ILIKE $${values.length}`);
+  }
+
+  if (filtros.ano) {
+    values.push(filtros.ano);
+    whereClauses.push(`ano = $${values.length}`);
+  }
+
+  if (whereClauses.length > 0) {
+    query += ` WHERE ${whereClauses.join(" AND ")}`;
+  }
+
+  query += " ORDER BY id ASC";
+
+  const { rows } = await db.query(query, values);
   return rows;
 }
 
@@ -48,40 +89,9 @@ async function AtualizarCaminhao(id, campos) {
   return rows[0];
 }
 
-async function FiltrarCaminhoes(params) {
-  let query = 'SELECT * FROM "CAMINHOES"';
-  const values = [];
-  const whereClauses = [];
-
-  if (filtros.placa) {
-    values.push(`%${filtros.placa}%`);
-    whereClauses.push(`"PLACA" ILIKE $${values.length}`);
-  }
-
-  if (filtros.modelo) {
-    values.push(`%${filtros.modelo}%`);
-    whereClauses.push(`"MODELO" ILIKE $${values.length}`);
-  }
-
-  if (filtros.ano) {
-    values.push(filtros.ano);
-    whereClauses.push(`"ANO" = $${values.length}`);
-  }
-
-  if (whereClauses.length > 0) {
-    query += ` WHERE ${whereClauses.join(" AND ")}`;
-  }
-
-  query += ' ORDER BY "ID" ASC';
-
-  const { rows } = await db.query(query, values);
-  return rows;
-}
-
 module.exports = {
   InserirCaminhao,
   BuscarCaminhoes,
   ExcluirCaminhao,
   AtualizarCaminhao,
-  FiltrarCaminhoes,
 };

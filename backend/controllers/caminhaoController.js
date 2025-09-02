@@ -29,10 +29,11 @@ exports.criarCaminhao = async (req, res) => {
 
 exports.buscarCaminhoes = async (req, res) => {
   try {
-    const data = await CaminhaoModel.BuscarCaminhoes();
+    const filtros = req.query;
+    const data = await CaminhaoModel.BuscarCaminhoes(filtros);
     res.status(200).json({
       ok: true,
-      message: "Caminhões foram obtidos com sucesso",
+      message: "Busca de caminhões realizada com sucesso.",
       caminhoes: data,
     });
   } catch (error) {
@@ -105,25 +106,6 @@ exports.atualizarCaminhao = async (req, res) => {
     res.status(500).json({
       ok: false,
       message: "Erro ao atualizar o caminhão.",
-      error: error.message,
-    });
-  }
-};
-
-exports.filtrarCaminhoes = async (req, res) => {
-  try {
-    const filtros = req.query;
-    const caminhoes = await CaminhaoModel.BuscarCaminhoes(filtros);
-
-    res.status(200).json({
-      ok: true,
-      message: "Busca de caminhões realizada com sucesso.",
-      caminhoes: caminhoes,
-    });
-  } catch (error) {
-    res.status(500).json({
-      ok: false,
-      message: "Erro ao buscar os caminhões.",
       error: error.message,
     });
   }
