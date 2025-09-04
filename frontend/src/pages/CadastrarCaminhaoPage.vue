@@ -205,8 +205,16 @@
   </q-page>
 </template>
 
-<script>
+<script setup>
+import { ref, reactive, computed, onMounted } from 'vue'
+import { useQuasar } from 'quasar'
 import * as caminhaoService from 'src/services/caminhaoService'
+
+const $q = useQuasar()
+
+const modoLista = ref(true)
+const carregando = ref(false)
+const caminhoes = ref([])
 
 const formVazio = {
   id: null,
@@ -218,125 +226,108 @@ const formVazio = {
   consumo_km_por_l_carregado: null,
   capacidade_ton: null,
 }
+const form = reactive({ ...formVazio })
 
-export default {
-  name: 'CaminhoesPage',
-  data() {
-    return {
-      modoLista: true,
-      carregando: false,
-      caminhoes: [],
-      form: { ...formVazio },
-      filtros: {
-        termo: '',
-        campo: 'modelo',
-      },
-      opcoesDeFiltro: [
-        { label: 'Modelo', value: 'modelo' },
-        { label: 'Placa', value: 'placa' },
-        { label: 'Ano', value: 'ano' },
-      ],
-    }
-  },
-  computed: {
-    placeholderPesquisa() {
-      const selecionado = this.opcoesDeFiltro.find((opt) => opt.value === this.filtros.campo)
-      return `Pesquisar por ${selecionado.label}...`
-    },
-    tipoInputPesquisa() {
-      return this.filtros.campo === 'ano' ? 'number' : 'text'
-    },
-    modoEdicao() {
-      return this.form.id !== null
-    },
-    tituloFormulario() {
-      return this.modoEdicao ? 'Editar Caminhão' : 'Cadastrar Novo Caminhão'
-    },
-    labelBotaoSalvar() {
-      return this.modoEdicao ? 'Salvar Alterações' : 'Cadastrar Caminhão'
-    },
-  },
-  methods: {
-    fecharFormulario() {
-      this.modoLista = true
-      this.form = { ...formVazio }
-    },
-    abrirFormularioCadastro() {
-      this.modoLista = false
-      this.form = { ...formVazio }
-    },
-    abrirFormularioEdicao(caminhao) {
-      this.modoLista = false
-      this.form = { ...caminhao }
-    },
+const filtros = reactive({
+  termo: '',
+  campo: 'modelo',
+})
 
-    async carregarCaminhoes() {
-      this.carregando = true
-      const filtrosParaApi = {}
+const opcoesDeFiltro = ref([
+  { label: 'Modelo', value: 'modelo' },
+  { label: 'Placa', value: 'placa' },
+  { label: 'Ano', value: 'ano' },
+])
 
-      const campo = this.filtros.campo
-      const termo = this.filtros.termo
+const modoEdicao = computed(() => form.id !== null && form.id !== undefined)
+const tituloFormulario = computed(() =>
+  modoEdicao.value ? 'Editar Caminhão' : 'Cadastrar Novo Caminhão',
+)
+const labelBotaoSalvar = computed(() =>
+  modoEdicao.value ? 'Salvar Alterações' : 'Cadastrar Caminhão',
+)
 
-      if (termo) {
-        filtrosParaApi[campo] = termo
-      }
+const placeholderPesquisa = computed(() => {
+  const selecionado = opcoesDeFiltro.value.find((opt) => opt.value === filtros.campo)
+  return `Pesquisar por ${selecionado?.label || '...'}...` // Adicionado '?' para segurança
+})
 
-      const result = await caminhaoService.buscarCaminhoes(filtrosParaApi)
+const tipoInputPesquisa = computed(() => (filtros.campo === 'ano' ? 'number' : 'text'))
 
-      if (result.success) {
-        this.caminhoes = result.data
-      } else {
-        this.$q.notify({ type: 'negative', message: result.message })
-      }
-      this.carregando = false
-    },
-
-    async salvar() {
-      let result
-
-      if (this.modoEdicao) {
-        result = await caminhaoService.atualizarCaminhao(this.form.id, this.form)
-      } else {
-        result = await caminhaoService.cadastrarCaminhao(this.form)
-      }
-
-      if (result.success) {
-        this.$q.notify({ type: 'positive', message: result.message })
-        this.fecharFormulario()
-        await this.carregarCaminhoes()
-      } else {
-        this.$q.notify({ type: 'negative', message: result.message })
-      }
-    },
-
-    confirmarExclusao(caminhao) {
-      this.$q
-        .dialog({
-          title: 'Excluir caminhão',
-          message: `Deseja excluir o caminhão ${caminhao.modelo} (${caminhao.placa})? Esta ação não pode ser desfeita.`,
-          cancel: true,
-          persistent: true,
-          ok: { label: 'Excluir', color: 'red-5', flat: true },
-          cancel: { label: 'Cancelar', flat: true },
-        })
-        .onOk(() => {
-          this.excluir(caminhao.id)
-        })
-    },
-
-    async excluir(id) {
-      const result = await caminhaoService.excluirCaminhao(id)
-
-      if (result.success) {
-        this.$q.notify({ type: 'positive', message: result.message })
-        await this.carregarCaminhoes()
-      } else {
-        this.$q.notify({ type: 'negative', message: result.message })
-      }
-    },
-  },
-  mounted() {
-    this.carregarCaminhoes()
-  },
+const fecharFormulario = () => {
+  modoLista.value = true
+  Object.assign(form, formVazio)
 }
+
+const abrirFormularioCadastro = () => {
+  modoLista.value = false
+  Object.assign(form, formVazio)
+}
+
+const abrirFormularioEdicao = (caminhao) => {
+  modoLista.value = false
+  Object.assign(form, caminhao)
+}
+
+const carregarCaminhoes = async () => {
+  carregando.value = true
+  const filtrosParaApi = {}
+  if (filtros.termo) {
+    filtrosParaApi[filtros.campo] = filtros.termo
+  }
+  const result = await caminhaoService.buscarCaminhoes(filtrosParaApi)
+  if (result.success) {
+    caminhoes.value = result.data
+  } else {
+    $q.notify({ type: 'negative', message: result.message })
+  }
+  carregando.value = false
+}
+
+const salvar = async () => {
+  let result
+  if (modoEdicao.value) {
+    result = await caminhaoService.atualizarCaminhao(form.id, form)
+  } else {
+    result = await caminhaoService.cadastrarCaminhao(form)
+  }
+
+  if (result.success) {
+    $q.notify({ type: 'positive', message: result.message })
+    fecharFormulario()
+    await carregarCaminhoes()
+  } else {
+    $q.notify({ type: 'negative', message: result.message })
+  }
+}
+
+const confirmarExclusao = (caminhao) => {
+  $q.dialog({
+    title: 'Excluir caminhão',
+    message: `Deseja excluir o caminhão ${caminhao.modelo} (${caminhao.placa})? Esta ação não pode ser desfeita.`,
+    persistent: true,
+    ok: { label: 'Excluir', color: 'red-5', flat: true },
+    cancel: { label: 'Cancelar', flat: true },
+  }).onOk(() => {
+    excluir(caminhao.id)
+  })
+}
+
+const excluir = async (id) => {
+  if (!id) {
+    $q.notify({ type: 'negative', message: 'ID do caminhão não encontrado.' })
+    return
+  }
+  const result = await caminhaoService.excluirCaminhao(id)
+  if (result.success) {
+    $q.notify({ type: 'positive', message: result.message })
+    await carregarCaminhoes()
+  } else {
+    $q.notify({ type: 'negative', message: result.message })
+  }
+}
+
+onMounted(() => {
+  carregarCaminhoes()
+})
 </script>

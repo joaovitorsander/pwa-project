@@ -102,11 +102,12 @@ import { useQuasar } from 'quasar'
 import MapaComponent from 'src/components/MapaComponent.vue'
 import { calcularRotaGoogle } from 'src/services/directions.js'
 import { BuscarTiposCarga } from 'src/services/calcularFreteService'
+import { buscarCaminhoes } from 'src/services/caminhaoService'
 
-const $q = useQuasar()
 const mapComponentRef = ref(null)
+const $q = useQuasar()
 
-const form = reactive({
+const formVazio = {
   origem: '',
   destino: '',
   distancia: null,
@@ -115,41 +116,48 @@ const form = reactive({
   precoCombustivel: null,
   consumo: null,
   pedagio: null,
-})
-const resultadoRota = ref(null)
-
-const veiculos = [
-  { label: 'Caminhão Truck', value: 'truck' },
-  { label: 'Carreta Simples', value: 'carreta_simples' },
-]
-const tiposCarga = ref([])
-
-const carregarTiposCarga = async () => {
-  const dados = await BuscarTiposCarga()
-
-  tiposCarga.value = dados.map((item) => ({
-    label: item.nome,
-    value: item.id_tipo_carga,
-  }))
 }
 
-onMounted(() => {
-  carregarTiposCarga()
-})
+const form = reactive({ ...formVazio })
+const resultadoRota = ref(null)
+const veiculos = ref([])
+const tiposCarga = ref([])
+const carregandoDados = ref(true)
+
+const carregarTiposCarga = async () => {
+  const result = await BuscarTiposCarga()
+  if (result.success) {
+    tiposCarga.value = result.data.map((item) => ({
+      label: item.nome,
+      value: item.id,
+    }))
+  } else {
+    $q.notify({ type: 'negative', message: result.message })
+  }
+}
+
+const carregarCaminhoes = async () => {
+  const result = await buscarCaminhoes()
+  if (result.success) {
+    veiculos.value = result.data.map((item) => ({
+      label: item.modelo,
+      value: item.id,
+    }))
+  } else {
+    $q.notify({ type: 'negative', message: result.message })
+  }
+}
 
 const calcularFrete = async () => {
   if (!form.origem || !form.destino) {
     $q.notify({ type: 'negative', message: 'Por favor, preencha a origem e o destino.' })
     return
   }
-
   try {
     const response = await calcularRotaGoogle(form.origem, form.destino)
-
     if (mapComponentRef.value) {
       mapComponentRef.value.setDirections(response)
     }
-
     const rota = response.routes[0].legs[0]
     if (rota.distance) {
       form.distancia = Math.round(rota.distance.value / 1000)
@@ -158,28 +166,24 @@ const calcularFrete = async () => {
         duracao: rota.duration.text,
       }
     }
-
     console.log('Dados para o cálculo final do frete:', form)
   } catch (error) {
     console.error('Erro ao buscar rota:', error)
+    $q.notify({ type: 'negative', message: 'Não foi possível calcular a rota.' })
   }
 }
 
 const limparFormulario = () => {
-  Object.assign(form, {
-    origem: '',
-    destino: '',
-    distancia: null,
-    veiculo: null,
-    tipoCarga: null,
-    precoCombustivel: null,
-    consumo: null,
-    pedagio: null,
-  })
+  Object.assign(form, formVazio)
   resultadoRota.value = null
-
   if (mapComponentRef.value) {
     mapComponentRef.value.clearDirections()
   }
 }
+
+onMounted(async () => {
+  carregandoDados.value = true
+  await Promise.all([carregarTiposCarga(), carregarCaminhoes()])
+  carregandoDados.value = false
+})
 </script>

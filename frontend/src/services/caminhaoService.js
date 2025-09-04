@@ -38,43 +38,6 @@ export async function cadastrarCaminhao(dadosCaminhao) {
   }
 }
 
-export async function buscarTodosCaminhoes() {
-  try {
-    const response = await api.get('/caminhoes')
-    if (response.status === 200) {
-      return {
-        success: true,
-        message: 'Caminhões obtidos com sucesso.',
-        data: response.data.caminhoes || [],
-      }
-    }
-  } catch (error) {
-    if (error.response) {
-      console.error('Erro do servidor:', error.response.status)
-      console.error('Mensagem:', error.response.data.message)
-      return {
-        success: false,
-        message: error.response.data.message || 'Não foi possível buscar os caminhões.',
-        data: [],
-      }
-    } else if (error.request) {
-      console.error('Sem resposta do servidor:', error.request)
-      return {
-        success: false,
-        message: 'O servidor não respondeu. Tente novamente mais tarde.',
-        data: [],
-      }
-    } else {
-      console.error('Erro desconhecido:', error.message)
-      return {
-        success: false,
-        message: 'Ocorreu um erro inesperado ao buscar os caminhões.',
-        data: [],
-      }
-    }
-  }
-}
-
 export async function excluirCaminhao(id) {
   try {
     const response = await api.delete(`/caminhoes/${id}`)
