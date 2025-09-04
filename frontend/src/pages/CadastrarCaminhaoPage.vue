@@ -116,45 +116,72 @@
     <div v-else>
       <q-card flat bordered>
         <q-card-section>
-          <div class="text-subtitle1 text-weight-medium">{{ tituloFormulario }}</div>
+          <div class="text-h6 text-green-8">{{ tituloFormulario }}</div>
         </q-card-section>
 
         <q-separator />
 
         <q-card-section class="q-pa-md">
-          <q-form @submit.prevent="salvar" class="q-gutter-md">
-            <q-input
-              v-model="form.modelo"
-              label="Modelo *"
-              placeholder="Ex: Scania R450, Volvo FH540"
-              :rules="[(val) => !!val || 'Informe o modelo']"
-              filled
-            />
-            <q-input
-              v-model="form.placa"
-              label="Placa *"
-              placeholder="ABC-1234"
-              :rules="[(val) => !!val || 'Informe a placa']"
-              filled
-            />
-
+          <q-form @submit.prevent="salvar" class="q-gutter-y-md">
+            <div class="text-subtitle1 text-weight-medium text-grey-8">
+              Identificação do Veículo
+            </div>
             <div class="row q-col-gutter-md">
               <div class="col-12 col-md-6">
+                <q-input
+                  v-model="form.modelo"
+                  label="Modelo *"
+                  placeholder="Ex: Scania R450, Volvo FH540"
+                  :rules="[(val) => !!val || 'Informe o modelo']"
+                  outlined
+                  color="green-6"
+                />
+              </div>
+              <div class="col-12 col-md-6">
+                <q-input
+                  v-model="form.placa"
+                  label="Placa *"
+                  placeholder="ABC1D23"
+                  :rules="[(val) => !!val || 'Informe a placa']"
+                  outlined
+                  color="green-6"
+                />
+              </div>
+            </div>
+
+            <q-separator spaced="sm" />
+
+            <div class="text-subtitle1 text-weight-medium text-grey-8">Especificações Técnicas</div>
+            <div class="row q-col-gutter-md">
+              <div class="col-12 col-sm-6 col-md-3">
                 <q-input
                   v-model.number="form.ano"
                   type="number"
                   label="Ano *"
                   :rules="[(val) => !!val || 'Informe o ano']"
-                  filled
+                  outlined
+                  color="green-6"
                 />
               </div>
-              <div class="col-12 col-md-6">
+              <div class="col-12 col-sm-6 col-md-3">
                 <q-input
                   v-model.number="form.quantidade_eixos"
                   type="number"
-                  label="Quantidade de Eixos *"
+                  label="Qtd. de Eixos *"
                   :rules="[(val) => !!val || 'Informe os eixos']"
-                  filled
+                  outlined
+                  color="green-6"
+                />
+              </div>
+              <div class="col-12 col-sm-6 col-md-3">
+                <q-input
+                  v-model.number="form.capacidade_ton"
+                  type="number"
+                  step="0.1"
+                  label="Capacidade (ton) *"
+                  :rules="[(val) => !!val || 'Informe a capacidade']"
+                  outlined
+                  color="green-6"
                 />
               </div>
             </div>
@@ -165,9 +192,10 @@
                   v-model.number="form.consumo_km_por_l_vazio"
                   type="number"
                   step="0.1"
-                  label="Consumo (km/L) vazio*"
+                  label="Consumo Vazio (km/L) *"
                   :rules="[(val) => !!val || 'Informe o consumo']"
-                  filled
+                  outlined
+                  color="green-6"
                 />
               </div>
               <div class="col-12 col-md-6">
@@ -175,28 +203,23 @@
                   v-model.number="form.consumo_km_por_l_carregado"
                   type="number"
                   step="0.1"
-                  label="Consumo (km/L) carregado*"
+                  label="Consumo Carregado (km/L) *"
                   :rules="[(val) => !!val || 'Informe o consumo']"
-                  filled
+                  outlined
+                  color="green-6"
                 />
               </div>
             </div>
 
-            <div class="row q-col-gutter-md">
-              <div class="col-12 col-md-6">
-                <q-input
-                  v-model.number="form.capacidade_ton"
-                  type="number"
-                  step="0.1"
-                  label="Capacidade (ton) *"
-                  :rules="[(val) => !!val || 'Informe a capacidade']"
-                  filled
-                />
-              </div>
-            </div>
-
-            <div class="row justify-end q-gutter-sm q-mt-md">
-              <q-btn :label="labelBotaoSalvar" type="submit" color="green-6" no-caps />
+            <div class="row justify-end q-mt-lg">
+              <q-btn
+                :label="labelBotaoSalvar"
+                type="submit"
+                color="green-8"
+                no-caps
+                size="lg"
+                class="q-px-xl"
+              />
             </div>
           </q-form>
         </q-card-section>
