@@ -66,15 +66,13 @@
             <div class="col-12 col-md-6">
               <q-select
                 v-model="form.veiculo"
-                :options="veiculos"
+                :options="caminhoes"
                 label="Veículo *"
                 :rules="[(val) => !!val || 'Campo obrigatório']"
                 outlined
                 color="green-6"
                 emit-value
                 map-options
-                option-label="modelo"
-                option-value="id"
               />
             </div>
             <div class="col-12 col-md-6">
@@ -163,9 +161,9 @@
 
           <q-separator spaced="lg" />
 
-          <div class="text-h6 text-green-8 q-mb-sm">Custos Adicionais</div>
+          <div class="text-h6 text-green-8 q-mb-sm">Custos e Valores</div>
           <div class="row q-col-gutter-md">
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-4">
               <q-input
                 v-model.number="form.precoCombustivel"
                 type="number"
@@ -177,7 +175,7 @@
                 prefix="R$"
               />
             </div>
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-4">
               <q-input
                 v-model.number="form.pedagio"
                 type="number"
@@ -186,6 +184,33 @@
                 outlined
                 color="green-6"
                 prefix="R$"
+              />
+            </div>
+            <div class="col-12 col-md-4">
+              <q-input
+                v-model.number="form.valor_tonelada"
+                type="number"
+                step="0.01"
+                label="Valor por Tonelada (R$) *"
+                :rules="[(val) => !!val || 'Campo obrigatório']"
+                outlined
+                color="green-6"
+                prefix="R$"
+              />
+            </div>
+          </div>
+
+          <div class="row q-col-gutter-md">
+            <div class="col-12 col-md-4">
+              <q-input
+                v-model.number="form.commissao_motorista"
+                type="number"
+                label="Comissão do Motorista (%) *"
+                :rules="[(val) => !!val || 'Campo obrigatório']"
+                mask="##"
+                outlined
+                color="green-6"
+                prefix="%"
               />
             </div>
           </div>
@@ -206,8 +231,9 @@
 import { ref, reactive, onMounted, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import MapaComponent from 'src/components/MapaComponent.vue'
+import ResultadoCalculoComponent from 'src/components/ResultadoCalculoComponent.vue'
 import { calcularRotaGoogle } from 'src/services/directions.js'
-import { BuscarTiposCarga } from 'src/services/calcularFreteService'
+import { BuscarTiposCarga, simularCalculoFrete } from 'src/services/calcularFreteService'
 import { buscarCaminhoes } from 'src/services/caminhaoService'
 
 const mapComponentRef = ref(null)
@@ -227,13 +253,17 @@ const formVazio = {
   kmCarregado: null,
   kmVazio: null,
   pedagio: null,
+  valor_tonelada: null,
+  commissao_motorista: null,
 }
 
 const form = reactive({ ...formVazio })
 const resultadoRota = ref(null)
-const veiculos = ref([])
+const caminhoes = ref([])
 const tiposCarga = ref([])
 const carregandoDados = ref(true)
+const resultadoCalculo = ref(null)
+const caminhoesListaCompleta = ref([])
 
 const carregarTiposCarga = async () => {
   const result = await BuscarTiposCarga()
@@ -250,7 +280,12 @@ const carregarTiposCarga = async () => {
 const carregarCaminhoes = async () => {
   const result = await buscarCaminhoes()
   if (result.success) {
-    veiculos.value = result.data
+    caminhoesListaCompleta.value = result.data
+
+    caminhoes.value = result.data.map((item) => ({
+      label: item.modelo,
+      value: item.id,
+    }))
   } else {
     $q.notify({ type: 'negative', message: result.message })
   }
@@ -279,6 +314,22 @@ const calcularFrete = async () => {
     console.error('Erro ao buscar rota:', error)
     $q.notify({ type: 'negative', message: 'Não foi possível calcular a rota.' })
   }
+
+  const result = await simularCalculoFrete(form)
+
+  if (result.success) {
+    resultadoCalculo.value = result.data
+    $q.dialog({
+      component: ResultadoCalculoComponent,
+      componentProps: {
+        resultados: result.data,
+      },
+    }).onOk(() => {
+      // salvarCalculoFinal();
+    })
+  } else {
+    $q.notify({ type: 'negative', message: result.message })
+  }
 }
 
 const limparFormulario = () => {
@@ -305,7 +356,7 @@ watch(
       return
     }
 
-    const veiculoSelecionado = veiculos.value.find((v) => v.id === novoIdDoVeiculo)
+    const veiculoSelecionado = caminhoesListaCompleta.value.find((v) => v.id === novoIdDoVeiculo)
 
     if (veiculoSelecionado) {
       form.consumo_km_por_l_vazio = veiculoSelecionado.consumo_km_por_l_vazio
