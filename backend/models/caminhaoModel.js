@@ -56,6 +56,13 @@ async function BuscarCaminhoes(filtros = {}) {
   return rows;
 }
 
+async function BuscarCaminhaoPeloId(id) {
+  const query = "SELECT * FROM caminhoes WHERE caminhoes.id = $1";
+  const values = [id];
+  const { rows } = await db.query(query, values);
+  return rows[0];  
+}
+
 async function ExcluirCaminhao(id) {
   const query = "DELETE FROM caminhoes WHERE caminhoes.id = $1 RETURNING *";
   const values = [id];
@@ -92,6 +99,7 @@ async function AtualizarCaminhao(id, campos) {
 module.exports = {
   InserirCaminhao,
   BuscarCaminhoes,
+  BuscarCaminhaoPeloId,
   ExcluirCaminhao,
   AtualizarCaminhao,
 };
