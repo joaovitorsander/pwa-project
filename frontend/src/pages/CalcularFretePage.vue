@@ -23,7 +23,7 @@
       <q-separator />
 
       <q-card-section>
-        <q-form @submit.prevent="calcularFrete" class="q-gutter-y-md">
+        <q-form ref="formRef" @submit.prevent="calcularFrete" class="q-gutter-y-md">
           <div class="text-h6 text-green-8 q-mb-sm">Detalhes da Rota</div>
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
@@ -228,16 +228,22 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted, watch, nextTick } from 'vue'
 import { useQuasar } from 'quasar'
 import MapaComponent from 'src/components/MapaComponent.vue'
 import ResultadoCalculoComponent from 'src/components/ResultadoCalculoComponent.vue'
 import { calcularRotaGoogle } from 'src/services/directions.js'
-import { BuscarTiposCarga, simularCalculoFrete } from 'src/services/calcularFreteService'
+import {
+  BuscarTiposCarga,
+  simularCalculoFrete,
+  salvarFreteCalculado,
+} from 'src/services/calcularFreteService'
 import { buscarCaminhoes } from 'src/services/caminhaoService'
 
 const mapComponentRef = ref(null)
 const $q = useQuasar()
+
+const formRef = ref(null)
 
 const formVazio = {
   origem: '',
@@ -309,7 +315,6 @@ const calcularFrete = async () => {
         duracao: rota.duration.text,
       }
     }
-    console.log('Dados para o cálculo final do frete:', form)
   } catch (error) {
     console.error('Erro ao buscar rota:', error)
     $q.notify({ type: 'negative', message: 'Não foi possível calcular a rota.' })
@@ -325,8 +330,25 @@ const calcularFrete = async () => {
         resultados: result.data,
       },
     }).onOk(() => {
-      // salvarCalculoFinal();
+      salvarCalculo()
     })
+  } else {
+    $q.notify({ type: 'negative', message: result.message })
+  }
+}
+
+const salvarCalculo = async () => {
+  const calculoCompleto = {
+    ...form,
+    ...resultadoCalculo.value,
+  }
+
+  const result = await salvarFreteCalculado(calculoCompleto)
+
+  if (result.success) {
+    $q.notify({ type: 'positive', message: result.message })
+    limparFormulario()
+    resultadoCalculo.value = null
   } else {
     $q.notify({ type: 'negative', message: result.message })
   }
@@ -338,6 +360,12 @@ const limparFormulario = () => {
   if (mapComponentRef.value) {
     mapComponentRef.value.clearDirections()
   }
+
+  nextTick(() => {
+    if (formRef.value) {
+      formRef.value.resetValidation()
+    }
+  })
 }
 
 onMounted(async () => {

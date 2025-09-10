@@ -49,6 +49,7 @@
 
       <q-card-actions align="right" class="q-pa-md">
         <q-btn label="Fechar" color="grey-7" flat no-caps @click="onDialogCancel" />
+        <q-btn label="Salvar Cálculo" color="green-8" no-caps @click="onDialogOK" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -63,6 +64,8 @@ defineProps({
     required: true,
   },
 })
+
+defineEmits([...useDialogPluginComponent.emits])
 
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 </script>
