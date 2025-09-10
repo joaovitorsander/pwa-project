@@ -65,6 +65,8 @@ function calcularCustoFrete(dadosForm, dadosCaminhao, coeficientesAntt) {
     totalCustosOperacionais: totalCustosOperacionais.toFixed(2),
     lucroEstimado: lucroEstimado.toFixed(2), 
     valorAnttSugerido: valorAnttSugerido.toFixed(2),
+    valorCCDAplicado: valorCCD.toFixed(2), 
+    valorCCAplicado: valorCC.toFixed(2)
   };
 };
 
@@ -90,8 +92,8 @@ async function inserirCalculo(dadosParaSalvar) {
     valorAnttSugerido: valor_minimo_antt,
 
 
-    valorCCD: valor_ccd_aplicado,
-    valorCC: valor_cc_aplicado,
+    valorCCDAplicado: valor_ccd_aplicado,
+    valorCCAplicado: valor_cc_aplicado,
 
   } = dadosParaSalvar;
 
