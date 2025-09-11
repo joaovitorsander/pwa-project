@@ -69,34 +69,34 @@ CREATE TABLE calculos (
   created_at              TIMESTAMPTZ NOT NULL DEFAULT now(),
 
   -- Parâmetros do cenário
-  origem_uf               CHAR(2),
-  origem_cidade           TEXT,
-  destino_uf              CHAR(2),
-  destino_cidade          TEXT,
-  km_total                NUMERIC(10,2) NOT NULL,
-  eixos_carregados        SMALLINT NOT NULL,
-  tipo_carga_id           SMALLINT NOT NULL REFERENCES tipos_carga(id),
-  tipo_transporte_id      SMALLINT NOT NULL REFERENCES tipos_transporte(id),
+  origem_uf                  CHAR(2),
+  origem_cidade              TEXT,
+  destino_uf                 CHAR(2),
+  destino_cidade             TEXT,
+  km_total                   NUMERIC(10,2) NOT NULL,
+  quantidade_eixos           SMALLINT NOT NULL,
+  tipo_carga_id              SMALLINT NOT NULL REFERENCES tipos_carga(id),
+  tipo_transporte_id         SMALLINT NOT NULL REFERENCES tipos_transporte(id),
 
-  consumo_km_por_l        NUMERIC(10,3),
-  preco_combustivel_l     NUMERIC(10,3),
-  pedagios_total          NUMERIC(12,2),
-  outros_custos_total     NUMERIC(12,2),
+  consumo_km_por_l_vazio     NUMERIC(10,3),
+  consumo_km_por_l_carregado NUMERIC(10,3),
+  preco_combustivel_l        NUMERIC(10,3),
+  pedagios_total             NUMERIC(12,2),
+  outros_custos_total        NUMERIC(12,2),
 
   -- ANTT usada
-  antt_tabela_id          INT NOT NULL REFERENCES antt_tabelas(id),
+  antt_tabela_id             INT NOT NULL REFERENCES antt_tabelas(id),
 
   -- Coeficientes/Resultados congelados
-  valor_ccd_aplicado      NUMERIC(12,4),
-  valor_cc_aplicado       NUMERIC(12,2),
-  valor_minimo_antt       NUMERIC(12,2),
-  valor_frete_negociado   NUMERIC(12,2),
-  margem_desejada_pct     NUMERIC(5,2),
+  valor_ccd_aplicado         NUMERIC(12,4),
+  valor_cc_aplicado          NUMERIC(12,2),
+  valor_minimo_antt          NUMERIC(12,2),
+  valor_frete_negociado      NUMERIC(12,2),
 
-  custo_combustivel       NUMERIC(12,2),
-  custo_total             NUMERIC(12,2),
-  lucro_estimado          NUMERIC(12,2),
-  viavel                  BOOLEAN
+  custo_combustivel          NUMERIC(12,2),
+  custo_total                NUMERIC(12,2),
+  lucro_estimado             NUMERIC(12,2),
+  viavel                     BOOLEAN
 );
 
 -- 7) Itens de despesa (opcional)

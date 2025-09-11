@@ -82,8 +82,9 @@ async function inserirCalculo(dadosParaSalvar) {
     pedagio: pedagios_total,
 
 
-    quantidade_eixos: eixos_carregados,
-    consumo_km_por_l_carregado: consumo_km_por_l,
+    quantidade_eixos: quantidade_eixos,
+    consumo_km_por_l_vazio: consumo_km_por_l_vazio,
+    consumo_km_por_l_carregado: consumo_km_por_l_carregado,
 
 
     freteBruto: valor_frete_negociado,
@@ -106,24 +107,25 @@ async function inserirCalculo(dadosParaSalvar) {
       origem_cidade,                -- $2
       destino_cidade,               -- $3
       km_total,                     -- $4
-      eixos_carregados,             -- $5
+      quantidade_eixos,             -- $5
       tipo_carga_id,                -- $6
-      tipo_transporte_id,           -- 1 
-      consumo_km_por_l,             -- $8
-      preco_combustivel_l,          -- $9
-      pedagios_total,               -- $10
-      antt_tabela_id,               -- $11 (Ver Dica 4)
-      valor_ccd_aplicado,           -- $12
-      valor_cc_aplicado,            -- $13
-      valor_minimo_antt,            -- $14
-      valor_frete_negociado,        -- $15
-      custo_combustivel,            -- $16
-      custo_total,                  -- $17
-      lucro_estimado,               -- $18
-      viavel                        -- $19
+      tipo_transporte_id,           -- $7 
+      consumo_km_por_l_vazio,       -- $8
+      consumo_km_por_l_carregado,   -- $9
+      preco_combustivel_l,          -- $10
+      pedagios_total,               -- $11
+      antt_tabela_id,               -- $12
+      valor_ccd_aplicado,           -- $13
+      valor_cc_aplicado,            -- $14
+      valor_minimo_antt,            -- $15
+      valor_frete_negociado,        -- $16
+      custo_combustivel,            -- $17
+      custo_total,                  -- $18
+      lucro_estimado,               -- $19
+      viavel                        -- $20
     ) VALUES (
       $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
-      $11, $12, $13, $14, $15, $16, $17, $18, $19
+      $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
     )
     RETURNING *;
   `;
@@ -133,21 +135,22 @@ async function inserirCalculo(dadosParaSalvar) {
     origem_cidade,                // $2
     destino_cidade,               // $3
     km_total,                     // $4
-    eixos_carregados,             // $5
+    quantidade_eixos,             // $5
     tipo_carga_id,                // $6
-    1,                            // $7: tipo_transporte_id (valor fixo por enquanto)
-    consumo_km_por_l,             // $8
-    preco_combustivel_l,          // $9
-    pedagios_total,               // $10
-    1,                            // $11: antt_tabela_id (valor fixo por enquanto)
-    valor_ccd_aplicado,           // $12
-    valor_cc_aplicado,            // $13
-    valor_minimo_antt,            // $14
-    valor_frete_negociado,        // $15
-    custo_combustivel,            // $16
-    custo_total,                  // $17
-    lucro_estimado,               // $18
-    viavel                        // $19
+    1,                            // $7
+    consumo_km_por_l_vazio,       // $8
+    consumo_km_por_l_carregado,   // $9
+    preco_combustivel_l,          // $10
+    pedagios_total,               // $11
+    1,                            // $12
+    valor_ccd_aplicado,           // $13
+    valor_cc_aplicado,            // $14
+    valor_minimo_antt,            // $15
+    valor_frete_negociado,        // $16
+    custo_combustivel,            // $17
+    custo_total,                  // $18
+    lucro_estimado,               // $19
+    viavel                        // $20
   ];
 
   const { rows } = await db.query(query, values);
