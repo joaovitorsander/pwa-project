@@ -25,36 +25,71 @@
       <q-card-section>
         <q-form ref="formRef" @submit.prevent="calcularFrete" class="q-gutter-y-md">
           <div class="text-h6 text-green-8 q-mb-sm">Detalhes da Rota</div>
-          <div class="row q-col-gutter-md">
-            <div class="col-12 col-md-6">
-              <q-input
+          <div class="row q-col-gutter-md items-start">
+            <div class="col-12 col-md-5">
+              <q-select
                 v-model="form.origem"
                 label="Origem *"
-                placeholder="Cidade de origem"
-                :rules="[(val) => !!val || 'Campo obrigatório']"
                 outlined
                 color="green-6"
-              />
+                :options="opcoesOrigem"
+                use-input
+                fill-input
+                hide-selected
+                input-debounce="0"
+                @filter="filtrarOrigem"
+                :rules="[(val) => !!val || 'Campo obrigatório']"
+              >
+                <template v-slot:no-option>
+                  <q-item>
+                    <q-item-section class="text-grey">
+                      Digite 3 ou mais letras para buscar...
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </q-select>
             </div>
-            <div class="col-12 col-md-6">
-              <q-input
+            <div class="col-12 col-md-5">
+              <q-select
                 v-model="form.destino"
                 label="Destino *"
-                placeholder="Cidade de destino"
-                :rules="[(val) => !!val || 'Campo obrigatório']"
                 outlined
                 color="green-6"
+                :options="opcoesDestino"
+                use-input
+                fill-input
+                hide-selected
+                input-debounce="0"
+                @filter="filtrarDestino"
+                :rules="[(val) => !!val || 'Campo obrigatório']"
+              >
+                <template v-slot:no-option>
+                  <q-item>
+                    <q-item-section class="text-grey">
+                      Digite 3 ou mais letras para buscar...
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </q-select>
+            </div>
+            <div class="col-12 col-md-2">
+              <q-btn
+                label="Buscar Rota"
+                color="green-7"
+                class="full-width"
+                no-caps
+                @click="buscarRota"
               />
             </div>
             <div class="col-12">
               <q-input
                 v-model.number="form.distancia"
                 type="number"
-                label="Distância (km) *"
+                label="Distância Total (km) *"
                 readonly
                 outlined
                 color="green-6"
-                hint="Distância calculada automaticamente após a rota."
+                hint="Distância calculada automaticamente após a busca da rota."
               />
             </div>
           </div>
@@ -232,7 +267,8 @@ import { ref, reactive, onMounted, watch, nextTick } from 'vue'
 import { useQuasar } from 'quasar'
 import MapaComponent from 'src/components/MapaComponent.vue'
 import ResultadoCalculoComponent from 'src/components/ResultadoCalculoComponent.vue'
-import { calcularRotaGoogle } from 'src/services/directions.js'
+import { calcularRotaGoogle } from 'src/services/googleDirectionsService.js'
+import { buscarCidadesDebounced } from 'src/services/googlePlacesService'
 import {
   BuscarTiposCarga,
   simularCalculoFrete,
@@ -271,6 +307,25 @@ const carregandoDados = ref(true)
 const resultadoCalculo = ref(null)
 const caminhoesListaCompleta = ref([])
 
+const opcoesOrigem = ref([])
+const opcoesDestino = ref([])
+
+const filtrarOrigem = (val, update) => {
+  buscarCidadesDebounced(val, (resultados) => {
+    update(() => {
+      opcoesOrigem.value = resultados
+    })
+  })
+}
+
+const filtrarDestino = (val, update) => {
+  buscarCidadesDebounced(val, (resultados) => {
+    update(() => {
+      opcoesDestino.value = resultados
+    })
+  })
+}
+
 const carregarTiposCarga = async () => {
   const result = await BuscarTiposCarga()
   if (result.success) {
@@ -298,42 +353,38 @@ const carregarCaminhoes = async () => {
 }
 
 const calcularFrete = async () => {
-  if (!form.origem || !form.destino) {
-    $q.notify({ type: 'negative', message: 'Por favor, preencha a origem e o destino.' })
+  if (!form.distancia) {
+    $q.notify({ type: 'negative', message: 'Por favor, busque a rota primeiro.' })
     return
   }
+
+  $q.loading.show({ message: 'Calculando custos...' })
+
   try {
-    const response = await calcularRotaGoogle(form.origem, form.destino)
-    if (mapComponentRef.value) {
-      mapComponentRef.value.setDirections(response)
-    }
-    const rota = response.routes[0].legs[0]
-    if (rota.distance) {
-      form.distancia = Math.round(rota.distance.value / 1000)
-      resultadoRota.value = {
-        distancia: rota.distance.text,
-        duracao: rota.duration.text,
-      }
+    const result = await simularCalculoFrete(form)
+
+    if (result.success) {
+      resultadoCalculo.value = result.data
+
+      await $q
+        .dialog({
+          component: ResultadoCalculoComponent,
+          componentProps: {
+            resultados: result.data,
+          },
+        })
+        .onOk(async () => {
+          $q.loading.show({ message: 'Salvando cálculo...' })
+          await salvarCalculo()
+        })
+    } else {
+      $q.notify({ type: 'negative', message: result.message })
     }
   } catch (error) {
-    console.error('Erro ao buscar rota:', error)
-    $q.notify({ type: 'negative', message: 'Não foi possível calcular a rota.' })
-  }
-
-  const result = await simularCalculoFrete(form)
-
-  if (result.success) {
-    resultadoCalculo.value = result.data
-    $q.dialog({
-      component: ResultadoCalculoComponent,
-      componentProps: {
-        resultados: result.data,
-      },
-    }).onOk(() => {
-      salvarCalculo()
-    })
-  } else {
-    $q.notify({ type: 'negative', message: result.message })
+    console.error('Erro no processo de cálculo:', error)
+    $q.notify({ type: 'negative', message: 'Ocorreu um erro inesperado.' })
+  } finally {
+    $q.loading.hide()
   }
 }
 
@@ -351,6 +402,42 @@ const salvarCalculo = async () => {
     resultadoCalculo.value = null
   } else {
     $q.notify({ type: 'negative', message: result.message })
+  }
+}
+
+const buscarRota = async () => {
+  if (!form.origem || !form.destino) {
+    $q.notify({
+      type: 'negative',
+      message: 'Por favor, preencha a origem e o destino para buscar a rota.',
+    })
+    return
+  }
+
+  $q.loading.show({ message: 'Calculando rota...' })
+
+  try {
+    const response = await calcularRotaGoogle(form.origem, form.destino)
+    if (mapComponentRef.value) {
+      mapComponentRef.value.setDirections(response)
+    }
+    const rota = response.routes[0].legs[0]
+    if (rota.distance && rota.distance.value) {
+      const distanciaEmKm = Math.round(rota.distance.value / 1000)
+
+      form.distancia = distanciaEmKm
+      form.kmCarregado = distanciaEmKm
+
+      resultadoRota.value = {
+        distancia: rota.distance.text,
+        duracao: rota.duration.text,
+      }
+    }
+  } catch (error) {
+    console.log('Erro ao buscar a rota', error)
+    $q.notify({ type: 'negative', message: 'Não foi possível encontrar a rota.' })
+  } finally {
+    $q.loading.hide()
   }
 }
 
