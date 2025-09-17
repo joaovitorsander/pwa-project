@@ -1,4 +1,4 @@
-import { Notify } from 'quasar'
+import { api } from 'src/boot/axios'
 
 function debounce(func, delay = 400) {
   let timeoutId
@@ -10,37 +10,28 @@ function debounce(func, delay = 400) {
   }
 }
 
-const _buscarCidades = (termoDeBusca, callback) => {
-  if (!window.google || !window.google.maps || !window.google.maps.places) {
-    Notify.create({ type: 'negative', message: 'API de locais do Google Maps não está disponível.' })
-    callback([])
-    return
-  }
-
+const _buscarCidades = async (termoDeBusca, callback) => {
   if (!termoDeBusca || termoDeBusca.length < 3) {
-    callback([])
-    return
+    callback([]);
+    return;
   }
 
-  const autocompleteService = new window.google.maps.places.AutocompleteService()
+  try {
 
-  const requestOptions = {
-    input: termoDeBusca,
-    types: ['(cities)'],
-    componentRestrictions: { country: 'BR' },
+    const response = await api.get('/places/autocomplete', {
+      params: {
+        input: termoDeBusca,
+      },
+    });
+
+    const predictions = response.data.predictions || [];
+    const resultados = predictions.map((p) => p.description);
+    callback(resultados);
+
+  } catch (error) {
+    console.error('ERRO! A chamada para o backend falhou:', error);
+    callback([]);
   }
+};
 
-  autocompleteService.getPlacePredictions(requestOptions, (predictions, status) => {
-    if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
-      const resultados = predictions.map((p) => p.description)
-      callback(resultados)
-    } else if (status !== 'ZERO_RESULTS') {
-      console.error('Erro ao buscar previsões de local:', status)
-      callback([])
-    } else {
-      callback([])
-    }
-  })
-}
-
-export const buscarCidadesDebounced = debounce(_buscarCidades);
+export const buscarCidadesDebounced = debounce(_buscarCidades)
