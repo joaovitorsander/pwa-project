@@ -272,7 +272,7 @@ const labelBotaoSalvar = computed(() =>
 
 const placeholderPesquisa = computed(() => {
   const selecionado = opcoesDeFiltro.value.find((opt) => opt.value === filtros.campo)
-  return `Pesquisar por ${selecionado?.label || '...'}...` // Adicionado '?' para segurança
+  return `Pesquisar por ${selecionado?.label || '...'}...`
 })
 
 const tipoInputPesquisa = computed(() => (filtros.campo === 'ano' ? 'number' : 'text'))

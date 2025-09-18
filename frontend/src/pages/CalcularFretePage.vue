@@ -26,25 +26,51 @@
         <q-form ref="formRef" @submit.prevent="calcularFrete" class="q-gutter-y-md">
           <div class="text-h6 text-green-8 q-mb-sm">Detalhes da Rota</div>
           <div class="row q-col-gutter-md items-start">
-            <div class="col-12 col-md-6">
-              <q-input
+            <div class="col-12 col-md-5">
+              <q-select
                 v-model="form.origem"
                 label="Origem *"
-                placeholder="Cidade de origem"
-                :rules="[(val) => !!val || 'Campo obrigatório']"
                 outlined
                 color="green-6"
-              />
+                :options="opcoesOrigem"
+                use-input
+                fill-input
+                hide-selected
+                input-debounce="0"
+                @filter="filtrarOrigem"
+                :rules="[(val) => !!val || 'Campo obrigatório']"
+              >
+                <template v-slot:no-option>
+                  <q-item>
+                    <q-item-section class="text-grey">
+                      Digite 3 ou mais letras para buscar...
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </q-select>
             </div>
-            <div class="col-12 col-md-6">
-              <q-input
+            <div class="col-12 col-md-5">
+              <q-select
                 v-model="form.destino"
                 label="Destino *"
-                placeholder="Cidade de destino"
-                :rules="[(val) => !!val || 'Campo obrigatório']"
                 outlined
                 color="green-6"
-              />
+                :options="opcoesDestino"
+                use-input
+                fill-input
+                hide-selected
+                input-debounce="0"
+                @filter="filtrarDestino"
+                :rules="[(val) => !!val || 'Campo obrigatório']"
+              >
+                <template v-slot:no-option>
+                  <q-item>
+                    <q-item-section class="text-grey">
+                      Digite 3 ou mais letras para buscar...
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </q-select>
             </div>
 
             <div class="col-12 col-md-9">
