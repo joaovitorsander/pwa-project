@@ -6,6 +6,7 @@ const caminhaoRoutes = require("./routes/caminhaoRoutes");
 const tiposcargaRoutes = require("./routes/tiposcargaRoutes");
 const calcularFreteRoutes = require("./routes/calcularFreteRoutes");
 const placesRoutes = require("./routes/placesRoutes");
+const historicoRoutes = require("./routes/historicoRoutes");
 
 const app = express();
 const port = 3000;
@@ -17,6 +18,7 @@ app.use("/caminhoes", caminhaoRoutes);
 app.use("/tiposcarga", tiposcargaRoutes);
 app.use("/fretes", calcularFreteRoutes);
 app.use("/places", placesRoutes);
+app.use("/historico", historicoRoutes);
 
 app.get("/", (req, res) => {
   res.send("Api funcionando");

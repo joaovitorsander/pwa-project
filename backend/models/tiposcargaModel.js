@@ -1,4 +1,4 @@
-const db = require('../db')
+const db = require("../db")
 
 async function BuscarTiposCarga() {
     const query = 'SELECT id, nome FROM tipos_carga';
