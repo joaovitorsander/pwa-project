@@ -7,7 +7,7 @@
       </div>
       <div>
         <q-btn
-          v-if="modoLista"
+          v-if="!exibirFormulario"
           color="green-6"
           icon="add"
           label="Adicionar"
@@ -26,7 +26,7 @@
       </div>
     </div>
 
-    <div v-if="modoLista">
+    <div v-if="!exibirFormulario">
       <q-card flat bordered class="q-mb-md">
         <q-card-section>
           <q-form @submit.prevent="carregarCaminhoes" class="row items-start q-col-gutter-md">
@@ -38,13 +38,14 @@
                 dense
                 outlined
                 color="green-6"
+                clearable
+                @clear="carregarCaminhoes"
               >
                 <template v-slot:prepend>
                   <q-icon name="search" />
                 </template>
               </q-input>
             </div>
-
             <div class="col-xs-12 col-sm-auto" style="min-width: 130px">
               <q-select
                 v-model="filtros.campo"
@@ -57,23 +58,26 @@
                 color="green-6"
               />
             </div>
-
             <div class="col-auto">
               <q-btn label="Buscar" color="green-6" type="submit" no-caps class="q-px-md" />
             </div>
           </q-form>
         </q-card-section>
       </q-card>
+
       <q-skeleton v-if="carregando" type="rect" class="q-mb-md" height="110px" />
       <q-skeleton v-if="carregando" type="rect" class="q-mb-md" height="110px" />
 
-      <div v-if="!carregando && caminhoes.length === 0" class="text-grey-7">
-        Nenhum caminhão cadastrado ainda.
+      <div v-if="!carregando && caminhoes.length === 0" class="text-grey-7 q-pa-sm">
+        <span v-if="buscaRealizadaSemResultados">
+          Nenhum caminhão encontrado para a busca realizada.
+        </span>
+        <span v-else> Nenhum caminhão cadastrado ainda. </span>
       </div>
 
       <q-card v-for="c in caminhoes" :key="c.id" flat bordered class="q-mb-md">
         <q-card-section>
-          <div class="row items-start justify-between">
+          <div class="row items-start justify-between no-wrap">
             <div class="column">
               <div class="text-subtitle1 text-weight-bold">{{ c.modelo }}</div>
               <div class="text-grey-7">
@@ -81,19 +85,23 @@
                 <span class="text-weight-medium">{{ c.ano }}</span>
               </div>
 
-              <div class="row q-col-gutter-md q-mt-sm">
-                <div class="col-auto">
-                  <span class="text-grey-7">Consumo:</span>
-                  <span class="text-weight-medium"> {{ c.consumo_km_l }} km/L</span>
+              <div class="row q-mt-sm">
+                <div class="column q-mt-sm q-gutter-y-xs">
+                  <div class="text-grey-7">
+                    Consumo:
+                    <span class="text-weight-medium text-black"
+                      >{{ c.consumo_km_por_l_carregado }} km/L (Carregado)</span
+                    >
+                    <span class="q-mx-xs text-grey-5">|</span>
+                    <span class="text-weight-medium text-black"
+                      >{{ c.consumo_km_por_l_vazio }} km/L (Vazio)</span
+                    >
+                  </div>
+                  <div class="text-grey-7">
+                    Capacidade:
+                    <span class="text-weight-medium text-black">{{ c.capacidade_ton }} ton</span>
+                  </div>
                 </div>
-                <div class="col-auto">
-                  <span class="text-grey-7">Capacidade:</span>
-                  <span class="text-weight-medium"> {{ c.capacidade_ton }} ton</span>
-                </div>
-              </div>
-              <div class="q-mt-xs">
-                <span class="text-grey-7">Tipo:</span>
-                <q-badge outline color="green-7" class="q-ml-xs">{{ c.tipo }}</q-badge>
               </div>
             </div>
 
@@ -113,118 +121,12 @@
       </q-card>
     </div>
 
-    <div v-else>
-      <q-card flat bordered>
-        <q-card-section>
-          <div class="text-h6 text-green-8">{{ tituloFormulario }}</div>
-        </q-card-section>
-
-        <q-separator />
-
-        <q-card-section class="q-pa-md">
-          <q-form @submit.prevent="salvar" class="q-gutter-y-md">
-            <div class="text-subtitle1 text-weight-medium text-grey-8">
-              Identificação do veículo
-            </div>
-            <div class="row q-col-gutter-md">
-              <div class="col-12 col-md-6">
-                <q-input
-                  v-model="form.modelo"
-                  label="Modelo *"
-                  placeholder="Ex: Scania R450, Volvo FH540"
-                  :rules="[(val) => !!val || 'Informe o modelo']"
-                  outlined
-                  color="green-6"
-                />
-              </div>
-              <div class="col-12 col-md-6">
-                <q-input
-                  v-model="form.placa"
-                  label="Placa *"
-                  placeholder="ABC1D23"
-                  :rules="[(val) => !!val || 'Informe a placa']"
-                  outlined
-                  color="green-6"
-                />
-              </div>
-            </div>
-
-            <q-separator spaced="sm" />
-
-            <div class="text-subtitle1 text-weight-medium text-grey-8">Especificações técnicas</div>
-            <div class="row q-col-gutter-md">
-              <div class="col-12 col-sm-6 col-md-3">
-                <q-input
-                  v-model.number="form.ano"
-                  type="number"
-                  label="Ano *"
-                  :rules="[(val) => !!val || 'Informe o ano']"
-                  outlined
-                  color="green-6"
-                />
-              </div>
-              <div class="col-12 col-sm-6 col-md-3">
-                <q-input
-                  v-model.number="form.quantidade_eixos"
-                  type="number"
-                  label="Qtd. de eixos *"
-                  :rules="[(val) => !!val || 'Informe os eixos']"
-                  outlined
-                  color="green-6"
-                />
-              </div>
-              <div class="col-12 col-sm-6 col-md-3">
-                <q-input
-                  v-model.number="form.capacidade_ton"
-                  type="number"
-                  step="0.1"
-                  label="Capacidade (ton) *"
-                  :rules="[(val) => !!val || 'Informe a capacidade']"
-                  outlined
-                  color="green-6"
-                />
-              </div>
-            </div>
-
-            <div class="row q-col-gutter-md">
-              <div class="col-12 col-md-6">
-                <q-input
-                  v-model.number="form.consumo_km_por_l_vazio"
-                  type="number"
-                  step="0.1"
-                  label="Consumo vazio (km/L) *"
-                  :rules="[(val) => !!val || 'Informe o consumo']"
-                  outlined
-                  color="green-6"
-                />
-              </div>
-              <div class="col-12 col-md-6">
-                <q-input
-                  v-model.number="form.consumo_km_por_l_carregado"
-                  type="number"
-                  step="0.1"
-                  label="Consumo carregado (km/L) *"
-                  :rules="[(val) => !!val || 'Informe o consumo']"
-                  outlined
-                  color="green-6"
-                />
-              </div>
-            </div>
-
-            <div class="row justify-end q-mt-lg">
-              <q-btn
-                :label="labelBotaoSalvar"
-                type="submit"
-                color="green-8"
-                no-caps
-                size="lg"
-                class="q-px-xl"
-              />
-            </div>
-          </q-form>
-        </q-card-section>
-      </q-card>
-    </div>
+    <FormularioCaminhao
+      v-else
+      :caminhao-para-editar="caminhaoSelecionado"
+      @salvo="onFormularioSalvo"
+      @cancelado="fecharFormulario"
+    />
   </q-page>
 </template>
 
@@ -232,68 +134,55 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import * as caminhaoService from 'src/services/caminhaoService'
+import FormularioCaminhao from 'src/components/FormularioCaminhaoComponent.vue'
 
 const $q = useQuasar()
 
-const modoLista = ref(true)
 const carregando = ref(false)
 const caminhoes = ref([])
 
-const formVazio = {
-  id: null,
-  modelo: '',
-  placa: '',
-  ano: null,
-  quantidade_eixos: null,
-  consumo_km_por_l_vazio: null,
-  consumo_km_por_l_carregado: null,
-  capacidade_ton: null,
-}
-const form = reactive({ ...formVazio })
+const exibirFormulario = ref(false)
+const caminhaoSelecionado = ref(null)
+const buscaRealizadaSemResultados = ref(false)
 
 const filtros = reactive({
   termo: '',
   campo: 'modelo',
 })
-
 const opcoesDeFiltro = ref([
   { label: 'Modelo', value: 'modelo' },
   { label: 'Placa', value: 'placa' },
   { label: 'Ano', value: 'ano' },
 ])
-
-const modoEdicao = computed(() => form.id !== null && form.id !== undefined)
-const tituloFormulario = computed(() =>
-  modoEdicao.value ? 'Editar caminhão' : 'Cadastrar novo Caminhão',
-)
-const labelBotaoSalvar = computed(() =>
-  modoEdicao.value ? 'Salvar alterações' : 'Cadastrar caminhão',
-)
-
 const placeholderPesquisa = computed(() => {
   const selecionado = opcoesDeFiltro.value.find((opt) => opt.value === filtros.campo)
   return `Pesquisar por ${selecionado?.label || '...'}...`
 })
-
 const tipoInputPesquisa = computed(() => (filtros.campo === 'ano' ? 'number' : 'text'))
 
 const fecharFormulario = () => {
-  modoLista.value = true
-  Object.assign(form, formVazio)
+  exibirFormulario.value = false
+  caminhaoSelecionado.value = null
 }
 
 const abrirFormularioCadastro = () => {
-  modoLista.value = false
-  Object.assign(form, formVazio)
+  caminhaoSelecionado.value = null
+  exibirFormulario.value = true
 }
 
 const abrirFormularioEdicao = (caminhao) => {
-  modoLista.value = false
-  Object.assign(form, caminhao)
+  caminhaoSelecionado.value = caminhao
+  exibirFormulario.value = true
+}
+
+const onFormularioSalvo = async () => {
+  fecharFormulario()
+  await carregarCaminhoes()
 }
 
 const carregarCaminhoes = async () => {
   carregando.value = true
+  const filtroAtivo = filtros.termo && filtros.termo.trim() !== ''
   const filtrosParaApi = {}
   if (filtros.termo) {
     filtrosParaApi[filtros.campo] = filtros.termo
@@ -301,27 +190,11 @@ const carregarCaminhoes = async () => {
   const result = await caminhaoService.buscarCaminhoes(filtrosParaApi)
   if (result.success) {
     caminhoes.value = result.data
+    buscaRealizadaSemResultados.value = filtroAtivo && result.data.length === 0
   } else {
     $q.notify({ type: 'negative', message: result.message })
   }
   carregando.value = false
-}
-
-const salvar = async () => {
-  let result
-  if (modoEdicao.value) {
-    result = await caminhaoService.atualizarCaminhao(form.id, form)
-  } else {
-    result = await caminhaoService.cadastrarCaminhao(form)
-  }
-
-  if (result.success) {
-    $q.notify({ type: 'positive', message: result.message })
-    fecharFormulario()
-    await carregarCaminhoes()
-  } else {
-    $q.notify({ type: 'negative', message: result.message })
-  }
 }
 
 const confirmarExclusao = (caminhao) => {
