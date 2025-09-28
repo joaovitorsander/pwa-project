@@ -21,7 +21,7 @@
       <div class="col-12 col-sm-6">
         <q-card flat bordered>
           <q-card-section class="q-pa-md">
-            <div class="text-caption text-grey-7">Total de Fretes</div>
+            <div class="text-caption text-grey-7">Total de fretes</div>
             <div class="text-h6">{{ historico.length }}</div>
           </q-card-section>
         </q-card>
@@ -29,7 +29,7 @@
       <div class="col-12 col-sm-6">
         <q-card flat bordered>
           <q-card-section class="q-pa-md">
-            <div class="text-caption text-grey-7">Valor Médio</div>
+            <div class="text-caption text-grey-7">Valor médio</div>
             <div class="text-h6 text-positive">{{ formatBRL(valorMedio) }}</div>
           </q-card-section>
         </q-card>
@@ -37,64 +37,93 @@
     </div>
 
     <q-card flat bordered class="q-mb-md">
-      <q-card-section class="q-pa-md">
-        <div class="row items-center q-col-gutter-md">
-          <div class="col-12 col-sm">
+      <q-card-section>
+        <q-form @submit.prevent="carregarHistorico" class="row items-start q-col-gutter-md">
+          <div v-if="filtros.campo !== 'periodo'" class="col">
             <q-input
               v-model="filtros.termo"
-              label="Buscar por Origem, Destino ou Placa"
+              :label="placeholderPesquisa"
               dense
               outlined
-              clearable
-              @clear="carregarHistorico"
+              color="green-6"
             >
               <template #prepend>
                 <q-icon name="search" />
               </template>
             </q-input>
           </div>
+          <div
+            v-if="filtros.campo === 'periodo'"
+            class="col row items-center q-col-gutter-x-md no-wrap"
+          >
+            <div class="col">
+              <q-input
+                v-model="filtros.data_de"
+                label="Data Inicial"
+                dense
+                outlined
+                mask="##/##/####"
+                clearable
+                @clear="filtros.data_de = null"
+                color="green-6"
+              >
+                <template #prepend>
+                  <q-icon name="event" class="cursor-pointer">
+                    <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                      <q-date v-model="filtros.data_de" mask="DD/MM/YYYY">
+                        <div class="row items-center justify-end">
+                          <q-btn v-close-popup label="Ok" color="primary" flat />
+                        </div>
+                      </q-date>
+                    </q-popup-proxy>
+                  </q-icon>
+                </template>
+              </q-input>
+            </div>
 
-          <div class="col-12 col-sm-auto">
-            <q-input label="Filtrar por Período" dense outlined readonly>
-              <template #prepend>
-                <q-icon name="event" class="cursor-pointer">
-                  <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                    <q-date v-model="filtros.rangeData" range mask="YYYY-MM-DD">
-                      <div class="row items-center justify-end">
-                        <q-btn v-close-popup label="Fechar" color="primary" flat />
-                      </div>
-                    </q-date>
-                  </q-popup-proxy>
-                </q-icon>
-              </template>
-              <template #append>
-                <span class="text-caption text-grey-7 q-mr-sm">
-                  {{
-                    filtros.rangeData
-                      ? `${formatData(filtros.rangeData.from)} - ${formatData(filtros.rangeData.to)}`
-                      : 'Selecione'
-                  }}
-                </span>
-                <q-icon
-                  v-if="filtros.rangeData"
-                  name="cancel"
-                  @click.stop.prevent="filtros.rangeData = null"
-                  class="cursor-pointer"
-                />
-              </template>
-            </q-input>
+            <div class="col">
+              <q-input
+                v-model="filtros.data_ate"
+                label="Data Final"
+                dense
+                outlined
+                mask="##/##/####"
+                clearable
+                @clear="filtros.data_ate = null"
+                color="green-6"
+              >
+                <template #prepend>
+                  <q-icon name="event" class="cursor-pointer">
+                    <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                      <q-date v-model="filtros.data_ate" mask="DD/MM/YYYY">
+                        <div class="row items-center justify-end">
+                          <q-btn v-close-popup label="Ok" color="primary" flat />
+                        </div>
+                      </q-date>
+                    </q-popup-proxy>
+                  </q-icon>
+                </template>
+              </q-input>
+            </div>
+          </div>
+
+          <div class="col-xs-12 col-sm-auto" style="min-width: 130px">
+            <q-select
+              v-model="filtros.campo"
+              :options="opcoesDeFiltro"
+              label="Filtrar por"
+              dense
+              outlined
+              emit-value
+              map-options
+              color="green-6"
+            />
           </div>
 
           <div class="col-auto">
-            <q-btn
-              label="Buscar"
-              color="green-6"
-              no-caps
-              class="q-px-md"
-              @click="carregarHistorico"
-            />
+            <q-btn label="Buscar" color="green-6" type="submit" no-caps class="q-px-md" />
           </div>
-        </div>
+        </q-form>
       </q-card-section>
     </q-card>
 
@@ -118,17 +147,17 @@
 
             <div class="row q-col-gutter-md">
               <div class="col-auto">
-                <span class="text-grey-7">Distância:</span>
-                <span class="text-weight-medium"> {{ item.distancia_km }} km</span>
+                <span class="text-grey-7">Distância: </span>
+                <span class="text-weight-medium"> {{ formatarKm(item.distancia_km) }}</span>
               </div>
               <div class="col-auto">
-                <span class="text-grey-7">Veículo:</span>
+                <span class="text-grey-7">Veículo: </span>
                 <span class="text-weight-medium">
                   {{ item.veiculo_modelo }} ({{ item.placa }})
                 </span>
               </div>
               <div class="col-auto">
-                <span class="text-grey-7">Consumo:</span>
+                <span class="text-grey-7">Consumo: </span>
                 <span class="text-weight-medium"> {{ item.consumo_km_l }} km/L</span>
               </div>
             </div>
@@ -169,9 +198,27 @@ const $q = useQuasar()
 const carregando = ref(false)
 const historico = ref([])
 
+const opcoesDeFiltro = ref([
+  { label: 'Origem', value: 'origem' },
+  { label: 'Destino', value: 'destino' },
+  { label: 'Placa', value: 'placa' },
+  { label: 'Caminhão', value: 'caminhao' },
+  { label: 'Período', value: 'periodo' },
+])
+
 const filtros = reactive({
   termo: '',
-  rangeData: null,
+  campo: 'Origem',
+  data_de: null,
+  data_ate: null,
+})
+
+const placeholderPesquisa = computed(() => {
+  if (filtros.campo === 'origem') return 'Buscar por cidade de origem...'
+  if (filtros.campo === 'destino') return 'Buscar por cidade de destino...'
+  if (filtros.campo === 'placa') return 'Buscar por placa do caminhão...'
+  if (filtros.campo === 'caminhao') return 'Buscar por modelo do caminhão...'
+  return ''
 })
 
 const valorTotal = computed(() => historico.value.reduce((acc, h) => acc + (h.valor_total || 0), 0))
@@ -180,18 +227,49 @@ const valorMedio = computed(() =>
 )
 
 async function carregarHistorico() {
-  carregando.value = true
+  if (filtros.campo === 'periodo') {
+    if (!dataEhValida(filtros.data_de)) {
+      $q.notify({ type: 'warning', message: 'A Data Inicial inserida é inválida.' })
+      return
+    }
+    if (!dataEhValida(filtros.data_ate)) {
+      $q.notify({ type: 'warning', message: 'A Data Final inserida é inválida.' })
+      return
+    }
 
+    const temApenasUmaData =
+      (filtros.data_de && !filtros.data_ate) || (!filtros.data_de && filtros.data_ate)
+
+    if (temApenasUmaData) {
+      $q.notify({
+        type: 'warning',
+        message: 'Para filtrar por período, é necessário informar a Data Inicial e a Data Final.',
+      })
+      return
+    }
+
+    if (filtros.data_de && filtros.data_ate) {
+      const dataInicio = new Date(converteDataFormatoBr(filtros.data_de))
+      const dataFim = new Date(converteDataFormatoBr(filtros.data_ate))
+
+      if (dataFim < dataInicio) {
+        $q.notify({
+          type: 'warning',
+          message: 'A Data Final não pode ser anterior à Data Inicial.',
+        })
+        return
+      }
+    }
+  }
+
+  carregando.value = true
   const filtrosParaApi = {}
 
-  if (filtros.termo) {
-    filtrosParaApi.termo = filtros.termo
-  }
-  if (filtros.rangeData?.from) {
-    filtrosParaApi.data_de = filtros.rangeData.from
-  }
-  if (filtros.rangeData?.to) {
-    filtrosParaApi.data_ate = filtros.rangeData.to
+  if (filtros.campo === 'periodo') {
+    filtrosParaApi.data_de = filtros.data_de
+    filtrosParaApi.data_ate = filtros.data_ate
+  } else if (filtros.termo) {
+    filtrosParaApi[filtros.campo] = filtros.termo
   }
 
   const result = await historicoService.buscarHistorico(filtrosParaApi)
@@ -246,6 +324,47 @@ function formatBRL(v = 0) {
 }
 function formatData(iso) {
   return date.formatDate(iso, 'DD/MM/YYYY')
+}
+
+function formatarKm(valor) {
+  const numero = Number(valor)
+  if (isNaN(numero)) {
+    return '0,00 km'
+  }
+
+  const formatador = new Intl.NumberFormat('pt-BR', {
+    style: 'decimal',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+
+  return `${formatador.format(numero)} km`
+}
+
+function dataEhValida(dataStr) {
+  if (!dataStr) return true
+
+  if (!/^\d{2}\/\d{2}\/\d{4}$/.test(dataStr)) return false
+
+  const partes = dataStr.split('/')
+  const dia = parseInt(partes[0], 10)
+  const mes = parseInt(partes[1], 10)
+  const ano = parseInt(partes[2], 10)
+
+  if (ano < 1000 || ano > 3000 || mes === 0 || mes > 12) return false
+
+  const ultimoDiaDoMes = new Date(ano, mes, 0).getDate()
+  if (dia === 0 || dia > ultimoDiaDoMes) return false
+
+  return true
+}
+
+function converteDataFormatoBr(dataStr) {
+  if (!dataStr) return null
+
+  const [dia, mes, ano] = dataStr.split('/')
+
+  return new Date(Number(ano), Number(mes) - 1, Number(dia))
 }
 
 onMounted(() => {

@@ -1,4 +1,4 @@
-const db = require('../db');
+const db = require("../db");
 
 async function buscarHistorico(filtros = {}) {
   let baseQuery = `
@@ -22,26 +22,38 @@ async function buscarHistorico(filtros = {}) {
   const whereClauses = [];
   const params = [];
 
-  if (filtros.termo) {
-    params.push(`%${filtros.termo}%`);
-    const paramIndex = params.length;
-    whereClauses.push(
-      `(c.origem_cidade ILIKE $${paramIndex} OR c.destino_cidade ILIKE $${paramIndex} OR cam.placa ILIKE $${paramIndex})`
-    );
+  if (filtros.origem) {
+    params.push(`%${filtros.origem}%`);
+    whereClauses.push(`c.origem_cidade ILIKE $${params.length}`);
+  }
+
+  if (filtros.destino) {
+    params.push(`%${filtros.destino}%`);
+    whereClauses.push(`c.destino_cidade ILIKE $${params.length}`);
+  }
+  
+  if (filtros.placa) {
+    params.push(`%${filtros.placa}%`);
+    whereClauses.push(`cam.placa ILIKE $${params.length}`);
+  }
+
+  if (filtros.caminhao) {
+    params.push(`%${filtros.caminhao}%`);
+    whereClauses.push(`cam.modelo ILIKE $${params.length}`);
   }
 
   if (filtros.data_de) {
-    params.push(filtros.data_de);
+    params.push(formatarDataParaSQL(filtros.data_de));
     whereClauses.push(`c.created_at::date >= $${params.length}`);
   }
 
   if (filtros.data_ate) {
-    params.push(filtros.data_ate);
+    params.push(formatarDataParaSQL(filtros.data_ate));
     whereClauses.push(`c.created_at::date <= $${params.length}`);
   }
 
   if (whereClauses.length > 0) {
-    baseQuery += ` WHERE ${whereClauses.join(' AND ')}`;
+    baseQuery += ` WHERE ${whereClauses.join(" AND ")}`;
   }
 
   baseQuery += ` ORDER BY c.created_at DESC`;
@@ -51,17 +63,22 @@ async function buscarHistorico(filtros = {}) {
 }
 
 async function excluirCalculo(id) {
-  const query = 'DELETE FROM calculos WHERE id = $1 RETURNING *';
+  const query = "DELETE FROM calculos WHERE id = $1 RETURNING *";
   const values = [id];
   const { rows } = await db.query(query, values);
   return rows[0];
 }
 
 async function limparHistorico() {
-  const query = 'DELETE FROM calculos';
+  const query = "DELETE FROM calculos";
   await db.query(query);
 }
 
+function formatarDataParaSQL(data) {
+  if (!data || typeof data !== 'string' || data.length !== 10) return null;
+  const [dia, mes, ano] = data.split('/');
+  return `${ano}-${mes}-${dia}`;
+}
 
 module.exports = {
   buscarHistorico,
