@@ -225,7 +225,10 @@ const placeholderPesquisa = computed(() => {
   return ''
 })
 
-const valorTotal = computed(() => historico.value.reduce((acc, h) => acc + (h.valor_total || 0), 0))
+const valorTotal = computed(() =>
+  historico.value.reduce((acc, h) => acc + (Number(h.valor_total) || 0), 0),
+)
+
 const valorMedio = computed(() =>
   historico.value.length ? valorTotal.value / historico.value.length : 0,
 )
