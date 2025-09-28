@@ -13,21 +13,21 @@
         <div class="q-my-md q-pa-md bg-grey-2 rounded-borders">
           <div class="row justify-between">
             <span>Custo com combustível:</span>
-            <span class="text-weight-bold">R$ {{ resultados.custoTotalCombustivel }}</span>
+            <span class="text-weight-bold">{{ formatBRL(resultados.custoTotalCombustivel) }}</span>
           </div>
           <div class="row justify-between">
             <span>Custo com pedágios:</span>
-            <span class="text-weight-bold">R$ {{ resultados.valorPedagio }}</span>
+            <span class="text-weight-bold">{{ formatBRL(resultados.valorPedagio) }}</span>
           </div>
           <div class="row justify-between">
             <span>Comissão do motorista:</span>
-            <span class="text-weight-bold">R$ {{ resultados.valorComissaoMotorista }}</span>
+            <span class="text-weight-bold">{{ formatBRL(resultados.valorComissaoMotorista) }}</span>
           </div>
           <q-separator class="q-my-sm" />
           <div class="row justify-between text-subtitle2 text-weight-medium">
             <span>CUSTO OPERACIONAL TOTAL:</span>
             <span class="text-weight-bold text-red-7"
-              >R$ {{ resultados.totalCustosOperacionais }}</span
+              >{{ formatBRL(resultados.totalCustosOperacionais) }}</span
             >
           </div>
         </div>
@@ -35,15 +35,15 @@
         <div class="q-my-md q-pa-md bg-green-1 rounded-borders">
           <div class="row justify-between">
             <span>Valor bruto do frete:</span>
-            <span class="text-weight-bold">R$ {{ resultados.freteBruto }}</span>
+            <span class="text-weight-bold">{{ formatBRL(resultados.freteBruto) }}</span>
           </div>
           <div class="row justify-between text-subtitle2 text-weight-medium">
             <span>LUCRO ESTIMADO:</span>
-            <span class="text-weight-bold text-green-8">R$ {{ resultados.lucroEstimado }}</span>
+            <span class="text-weight-bold text-green-8">{{ formatBRL(resultados.lucroEstimado) }}</span>
           </div>
         </div>
         <div class="text-caption text-grey-7">
-          Valor mínimo sugerido pela ANTT: R$ {{ resultados.valorAnttSugerido }}
+          Valor mínimo sugerido pela ANTT: {{ formatBRL(resultados.valorAnttSugerido) }}
         </div>
       </q-card-section>
 
@@ -64,6 +64,19 @@ defineProps({
     required: true,
   },
 })
+
+const formatBRL = (value) => {
+  const numericValue = parseFloat(value)
+
+  if (isNaN(numericValue)) {
+    return 'R$ 0,00'
+  }
+
+  return numericValue.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  })
+}
 
 defineEmits([...useDialogPluginComponent.emits])
 
