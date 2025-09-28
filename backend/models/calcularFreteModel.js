@@ -1,5 +1,19 @@
 const db = require("../db");
 
+function parseLocalidade(localidadeStr) {
+  if (!localidadeStr || typeof localidadeStr != 'string') {
+    return { cidade: null, uf: null };
+  }
+
+  const partes = localidadeStr.split(',').map(p => p.trim());
+
+  if (partes.length < 2) {
+    return { cidade: partes[0] || null, uf: null }; 
+  }
+
+  return { cidade: partes[0], uf: partes[1] };
+}
+
 async function buscarCoeficientesAntt(tipoCargaId, quantidadeEixos) {
   const queryBuscaCoeficientes = `
     SELECT tipo_coeficiente, valor
@@ -73,8 +87,8 @@ function calcularCustoFrete(dadosForm, dadosCaminhao, coeficientesAntt) {
 
 async function inserirCalculo(dadosParaSalvar) {
   const {
-    origem: origem_cidade,
-    destino: destino_cidade,
+    origem: origem,
+    destino: destino,
     distancia: km_total,
     veiculo: caminhao_id,
     tipoCarga: tipo_carga_id,
@@ -98,59 +112,66 @@ async function inserirCalculo(dadosParaSalvar) {
 
   } = dadosParaSalvar;
 
+  const origemParseada = parseLocalidade(origem);
+  const destinoParseada = parseLocalidade(destino);
+
   const lucro_estimado = valor_frete_negociado - custo_total;
   const viavel = lucro_estimado > 0;
 
   const query = `
     INSERT INTO calculos (
       caminhao_id,                  -- $1
-      origem_cidade,                -- $2
-      destino_cidade,               -- $3
-      km_total,                     -- $4
-      quantidade_eixos,             -- $5
-      tipo_carga_id,                -- $6
-      tipo_transporte_id,           -- $7 
-      consumo_km_por_l_vazio,       -- $8
-      consumo_km_por_l_carregado,   -- $9
-      preco_combustivel_l,          -- $10
-      pedagios_total,               -- $11
-      antt_tabela_id,               -- $12
-      valor_ccd_aplicado,           -- $13
-      valor_cc_aplicado,            -- $14
-      valor_minimo_antt,            -- $15
-      valor_frete_negociado,        -- $16
-      custo_combustivel,            -- $17
-      custo_total,                  -- $18
-      lucro_estimado,               -- $19
-      viavel                        -- $20
+      origem_uf,                    -- $2 
+      origem_cidade,                -- $3
+      destino_uf,                   -- $4
+      destino_cidade,               -- $5
+      km_total,                     -- $6
+      quantidade_eixos,             -- $7
+      tipo_carga_id,                -- $8
+      tipo_transporte_id,           -- $9 
+      consumo_km_por_l_vazio,       -- $10
+      consumo_km_por_l_carregado,   -- $11
+      preco_combustivel_l,          -- $12
+      pedagios_total,               -- $13
+      antt_tabela_id,               -- $14
+      valor_ccd_aplicado,           -- $15
+      valor_cc_aplicado,            -- $16
+      valor_minimo_antt,            -- $17
+      valor_frete_negociado,        -- $18
+      custo_combustivel,            -- $19
+      custo_total,                  -- $20
+      lucro_estimado,               -- $21
+      viavel                        -- $22
     ) VALUES (
       $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
-      $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
+      $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22
     )
     RETURNING *;
   `;
 
   const values = [
     caminhao_id,                  // $1
-    origem_cidade,                // $2
-    destino_cidade,               // $3
-    km_total,                     // $4
-    quantidade_eixos,             // $5
-    tipo_carga_id,                // $6
-    1,                            // $7
-    consumo_km_por_l_vazio,       // $8
-    consumo_km_por_l_carregado,   // $9
-    preco_combustivel_l,          // $10
-    pedagios_total,               // $11
-    1,                            // $12
-    valor_ccd_aplicado,           // $13
-    valor_cc_aplicado,            // $14
-    valor_minimo_antt,            // $15
-    valor_frete_negociado,        // $16
-    custo_combustivel,            // $17
-    custo_total,                  // $18
-    lucro_estimado,               // $19
-    viavel                        // $20
+    origemParseada.uf,            // $2 
+    origemParseada.cidade,        // $3
+    destinoParseada.uf,           // $4
+    destinoParseada.cidade,       // $5
+    km_total,                     // $6
+    quantidade_eixos,             // $7
+    tipo_carga_id,                // $8
+    1,                            // $9
+    consumo_km_por_l_vazio,       // $10
+    consumo_km_por_l_carregado,   // $11
+    preco_combustivel_l,          // $12
+    pedagios_total,               // $13
+    1,                            // $14
+    valor_ccd_aplicado,           // $15
+    valor_cc_aplicado,            // $16
+    valor_minimo_antt,            // $17
+    valor_frete_negociado,        // $18
+    custo_combustivel,            // $19
+    custo_total,                  // $20
+    lucro_estimado,               // $21
+    viavel                        // $22
   ];
 
   const { rows } = await db.query(query, values);
