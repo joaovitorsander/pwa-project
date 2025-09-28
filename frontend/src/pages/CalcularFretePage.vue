@@ -16,7 +16,7 @@
       <q-card-section>
         <div class="text-subtitle1 text-weight-medium text-green-8 flex items-center q-gutter-sm">
           <q-icon name="calculate" size="30px" />
-          Calcular Frete
+          Calcular frete
         </div>
       </q-card-section>
 
@@ -24,7 +24,7 @@
 
       <q-card-section>
         <q-form ref="formRef" @submit.prevent="calcularFrete" class="q-gutter-y-md">
-          <div class="text-h6 text-green-8 q-mb-sm">Detalhes da Rota</div>
+          <div class="text-h6 text-green-8 q-mb-sm">Detalhes da rota</div>
           <div class="row q-col-gutter-md items-start">
             <div class="col-12 col-md-5">
               <q-select
@@ -77,7 +77,7 @@
               <q-input
                 v-model.number="form.distancia"
                 type="number"
-                label="Distância Total (km) *"
+                label="Distância total (km) *"
                 readonly
                 outlined
                 color="green-6"
@@ -86,7 +86,7 @@
             </div>
             <div class="col-12 col-md-3">
               <q-btn
-                label="Buscar Rota"
+                label="Buscar rota"
                 color="green-7"
                 class="full-width full-height"
                 no-caps
@@ -97,7 +97,7 @@
 
           <q-separator spaced="lg" />
 
-          <div class="text-h6 text-green-8 q-mb-sm">Informações do Veículo e Carga</div>
+          <div class="text-h6 text-green-8 q-mb-sm">Informações do veículo e carga</div>
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
               <q-select
@@ -115,7 +115,7 @@
               <q-select
                 v-model="form.tipoCarga"
                 :options="tiposCarga"
-                label="Tipo de Carga *"
+                label="Tipo de carga *"
                 :rules="[(val) => !!val || 'Campo obrigatório']"
                 outlined
                 color="green-6"
@@ -131,7 +131,7 @@
                 v-model.number="form.consumo_km_por_l_vazio"
                 type="number"
                 step="0.1"
-                label="Consumo Vazio (km/L)"
+                label="Consumo vazio (km/L)"
                 outlined
                 color="green-6"
                 hint="Preenchido automaticamente pelo veículo."
@@ -142,7 +142,7 @@
                 v-model.number="form.consumo_km_por_l_carregado"
                 type="number"
                 step="0.1"
-                label="Consumo Carregado (km/L)"
+                label="Consumo carregado (km/L)"
                 outlined
                 color="green-6"
                 hint="Preenchido automaticamente pelo veículo."
@@ -152,7 +152,7 @@
               <q-input
                 v-model.number="form.quantidade_eixos"
                 type="number"
-                label="Qtd. de Eixos"
+                label="Qtd. de eixos"
                 outlined
                 color="green-6"
                 hint="Preenchido automaticamente pelo veículo."
@@ -166,7 +166,7 @@
                 v-model.number="form.toneladaCarga"
                 type="number"
                 step="0.1"
-                label="Toneladas da Carga *"
+                label="Toneladas da carga *"
                 :rules="[(val) => !!val || 'Campo obrigatório']"
                 outlined
                 color="green-6"
@@ -176,7 +176,7 @@
               <q-input
                 v-model.number="form.kmCarregado"
                 type="number"
-                label="KM Rodado Carregado *"
+                label="KM rodado carregado *"
                 :rules="[(val) => !!val || 'Campo obrigatório']"
                 outlined
                 color="green-6"
@@ -187,7 +187,7 @@
               <q-input
                 v-model.number="form.kmVazio"
                 type="number"
-                label="KM Rodado Vazio"
+                label="KM rodado vazio"
                 outlined
                 color="green-6"
                 hint="Distância percorrida sem carga."
@@ -204,7 +204,7 @@
                 v-model.number="form.precoCombustivel"
                 type="number"
                 step="0.01"
-                label="Preço Combustível (R$/L) *"
+                label="Preço combustível (R$/L) *"
                 :rules="[(val) => !!val || 'Campo obrigatório']"
                 outlined
                 color="green-6"
@@ -227,7 +227,7 @@
                 v-model.number="form.valor_tonelada"
                 type="number"
                 step="0.01"
-                label="Valor por Tonelada (R$) *"
+                label="Valor por tonelada (R$) *"
                 :rules="[(val) => !!val || 'Campo obrigatório']"
                 outlined
                 color="green-6"
@@ -241,7 +241,7 @@
               <q-input
                 v-model.number="form.commissao_motorista"
                 type="number"
-                label="Comissão do Motorista (%) *"
+                label="Comissão do motorista (%) *"
                 :rules="[(val) => !!val || 'Campo obrigatório']"
                 mask="##"
                 outlined
@@ -254,7 +254,7 @@
           <q-separator spaced="lg" />
 
           <div class="row justify-between q-mt-md">
-            <q-btn label="Calcular Rota e Frete" type="submit" color="green-8" size="lg" no-caps />
+            <q-btn label="Calcular frete" type="submit" color="green-8" size="lg" no-caps />
             <q-btn label="Limpar" flat color="grey-7" @click="limparFormulario" />
           </div>
         </q-form>

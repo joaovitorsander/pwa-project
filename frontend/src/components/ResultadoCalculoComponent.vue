@@ -2,7 +2,7 @@
   <q-dialog ref="dialogRef" @hide="onDialogHide" persistent>
     <q-card class="q-dialog-plugin" style="width: 600px; max-width: 80vw">
       <q-card-section class="bg-green-8 text-white">
-        <div class="text-h6">📊 Resumo do Frete</div>
+        <div class="text-h6">📊 Resumo do frete</div>
       </q-card-section>
 
       <q-card-section class="q-pt-md">
@@ -12,15 +12,15 @@
 
         <div class="q-my-md q-pa-md bg-grey-2 rounded-borders">
           <div class="row justify-between">
-            <span>Custo com Combustível:</span>
+            <span>Custo com combustível:</span>
             <span class="text-weight-bold">R$ {{ resultados.custoTotalCombustivel }}</span>
           </div>
           <div class="row justify-between">
-            <span>Custo com Pedágios:</span>
+            <span>Custo com pedágios:</span>
             <span class="text-weight-bold">R$ {{ resultados.valorPedagio }}</span>
           </div>
           <div class="row justify-between">
-            <span>Comissão do Motorista:</span>
+            <span>Comissão do motorista:</span>
             <span class="text-weight-bold">R$ {{ resultados.valorComissaoMotorista }}</span>
           </div>
           <q-separator class="q-my-sm" />
@@ -34,7 +34,7 @@
 
         <div class="q-my-md q-pa-md bg-green-1 rounded-borders">
           <div class="row justify-between">
-            <span>Valor Bruto do Frete:</span>
+            <span>Valor bruto do frete:</span>
             <span class="text-weight-bold">R$ {{ resultados.freteBruto }}</span>
           </div>
           <div class="row justify-between text-subtitle2 text-weight-medium">
@@ -49,7 +49,7 @@
 
       <q-card-actions align="right" class="q-pa-md">
         <q-btn label="Fechar" color="grey-7" flat no-caps @click="onDialogCancel" />
-        <q-btn label="Salvar Cálculo" color="green-8" no-caps @click="onDialogOK" />
+        <q-btn label="Salvar cálculo" color="green-8" no-caps @click="onDialogOK" />
       </q-card-actions>
     </q-card>
   </q-dialog>

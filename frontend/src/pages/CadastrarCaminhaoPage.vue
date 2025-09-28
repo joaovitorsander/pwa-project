@@ -3,7 +3,7 @@
     <div class="row items-center justify-between q-mb-md">
       <div class="row items-center q-gutter-sm">
         <q-icon name="local_shipping" color="green-7" size="22px" />
-        <div class="text-subtitle1 text-weight-medium">Meus Caminhões</div>
+        <div class="text-subtitle1 text-weight-medium">Meus caminhões</div>
       </div>
       <div>
         <q-btn
@@ -124,7 +124,7 @@
         <q-card-section class="q-pa-md">
           <q-form @submit.prevent="salvar" class="q-gutter-y-md">
             <div class="text-subtitle1 text-weight-medium text-grey-8">
-              Identificação do Veículo
+              Identificação do veículo
             </div>
             <div class="row q-col-gutter-md">
               <div class="col-12 col-md-6">
@@ -151,7 +151,7 @@
 
             <q-separator spaced="sm" />
 
-            <div class="text-subtitle1 text-weight-medium text-grey-8">Especificações Técnicas</div>
+            <div class="text-subtitle1 text-weight-medium text-grey-8">Especificações técnicas</div>
             <div class="row q-col-gutter-md">
               <div class="col-12 col-sm-6 col-md-3">
                 <q-input
@@ -167,7 +167,7 @@
                 <q-input
                   v-model.number="form.quantidade_eixos"
                   type="number"
-                  label="Qtd. de Eixos *"
+                  label="Qtd. de eixos *"
                   :rules="[(val) => !!val || 'Informe os eixos']"
                   outlined
                   color="green-6"
@@ -192,7 +192,7 @@
                   v-model.number="form.consumo_km_por_l_vazio"
                   type="number"
                   step="0.1"
-                  label="Consumo Vazio (km/L) *"
+                  label="Consumo vazio (km/L) *"
                   :rules="[(val) => !!val || 'Informe o consumo']"
                   outlined
                   color="green-6"
@@ -203,7 +203,7 @@
                   v-model.number="form.consumo_km_por_l_carregado"
                   type="number"
                   step="0.1"
-                  label="Consumo Carregado (km/L) *"
+                  label="Consumo carregado (km/L) *"
                   :rules="[(val) => !!val || 'Informe o consumo']"
                   outlined
                   color="green-6"
@@ -264,10 +264,10 @@ const opcoesDeFiltro = ref([
 
 const modoEdicao = computed(() => form.id !== null && form.id !== undefined)
 const tituloFormulario = computed(() =>
-  modoEdicao.value ? 'Editar Caminhão' : 'Cadastrar Novo Caminhão',
+  modoEdicao.value ? 'Editar caminhão' : 'Cadastrar novo Caminhão',
 )
 const labelBotaoSalvar = computed(() =>
-  modoEdicao.value ? 'Salvar Alterações' : 'Cadastrar Caminhão',
+  modoEdicao.value ? 'Salvar alterações' : 'Cadastrar caminhão',
 )
 
 const placeholderPesquisa = computed(() => {
