@@ -376,7 +376,11 @@ const calcularFrete = async () => {
         })
         .onOk(async () => {
           $q.loading.show({ message: 'Salvando cálculo...' })
-          await salvarCalculo()
+          try {
+            await salvarCalculo()
+          } finally {
+            $q.loading.hide()
+          }
         })
     } else {
       $q.notify({ type: 'negative', message: result.message })
