@@ -22,13 +22,24 @@ async function buscarHistorico(filtros = {}) {
   const whereClauses = [];
   const params = [];
 
-  if (filtros.origem) {
-    params.push(`%${filtros.origem}%`);
+  
+  if (filtros.uf_origem) {
+    params.push(`%${filtros.uf_origem}%`);
+    whereClauses.push(`c.origem_uf ILIKE $${params.length}`);
+  }
+
+  if (filtros.uf_destino) {
+    params.push(`%${filtros.uf_destino}%`);
+    whereClauses.push(`c.destino_uf ILIKE $${params.length}`);
+  }
+
+  if (filtros.cidade_origem) {
+    params.push(`%${filtros.cidade_origem}%`);
     whereClauses.push(`c.origem_cidade ILIKE $${params.length}`);
   }
 
-  if (filtros.destino) {
-    params.push(`%${filtros.destino}%`);
+  if (filtros.cidade_destino) {
+    params.push(`%${filtros.cidade_destino}%`);
     whereClauses.push(`c.destino_cidade ILIKE $${params.length}`);
   }
   

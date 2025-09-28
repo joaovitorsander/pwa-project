@@ -3,7 +3,7 @@
     <div class="row items-center justify-between q-mb-md">
       <div class="row items-center q-gutter-sm">
         <q-icon name="history" color="green-7" size="22px" />
-        <div class="text-subtitle1 text-weight-medium">Histórico de Cálculos</div>
+        <div class="text-subtitle1 text-weight-medium">Histórico de cálculos</div>
       </div>
       <div>
         <q-btn
@@ -182,7 +182,7 @@
     </q-card>
 
     <q-card flat bordered class="q-pa-lg q-mt-lg">
-      <div class="text-caption text-grey-7">Valor Total dos Fretes</div>
+      <div class="text-caption text-grey-7">Valor total dos fretes</div>
       <div class="text-h6 text-positive q-mt-sm">{{ formatBRL(valorTotal) }}</div>
     </q-card>
   </q-page>
@@ -199,8 +199,10 @@ const carregando = ref(false)
 const historico = ref([])
 
 const opcoesDeFiltro = ref([
-  { label: 'Origem', value: 'origem' },
-  { label: 'Destino', value: 'destino' },
+  { label: 'Cidade origem', value: 'cidade_origem' },
+  { label: 'UF origem', value: 'uf_origem' },
+  { label: 'Cidade destino', value: 'cidade_destino' },
+  { label: 'UF destino', value: 'uf_destino' },
   { label: 'Placa', value: 'placa' },
   { label: 'Caminhão', value: 'caminhao' },
   { label: 'Período', value: 'periodo' },
@@ -208,14 +210,16 @@ const opcoesDeFiltro = ref([
 
 const filtros = reactive({
   termo: '',
-  campo: 'Origem',
+  campo: 'cidade_origem',
   data_de: null,
   data_ate: null,
 })
 
 const placeholderPesquisa = computed(() => {
-  if (filtros.campo === 'origem') return 'Buscar por cidade de origem...'
-  if (filtros.campo === 'destino') return 'Buscar por cidade de destino...'
+  if (filtros.campo === 'cidade_origem') return 'Buscar por cidade de origem...'
+  if (filtros.campo === 'uf_origem') return 'Buscar por UF de origem (ex: SC)'
+  if (filtros.campo === 'cidade_destino') return 'Buscar por cidade de destino...'
+  if (filtros.campo === 'uf_destino') return 'Buscar por UF de destino (ex: SP)'
   if (filtros.campo === 'placa') return 'Buscar por placa do caminhão...'
   if (filtros.campo === 'caminhao') return 'Buscar por modelo do caminhão...'
   return ''
