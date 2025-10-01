@@ -1,6 +1,8 @@
 import { Notify } from 'quasar';
+import { api } from 'src/boot/axios';
 
-export async function calcularRotaGoogle(
+//Como era a função antes quando usava a API Directions
+/*export async function calcularRotaGoogle(
   origin,
   destination
 ) {
@@ -35,4 +37,28 @@ export async function calcularRotaGoogle(
       }
     });
   });
+}*/
+
+export async function calcularRotaComPedagio(origin, destination) {
+  if (!origin || !destination) {
+    const message = 'Origem e destino precisam ser informados.';
+    Notify.create({ type: 'negative', message });
+    return Promise.reject(new Error(message));
+  }
+
+  try {
+    const response = await api.post('/routes/calcular', {
+      origin: origin,
+      destination: destination,
+    });
+    if (response.data && response.data.ok) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || 'Resposta inválida do servidor.');
+    }
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || error.message || 'Falha ao calcular a rota.';
+    Notify.create({ type: 'negative', message: errorMessage });
+    return Promise.reject(new Error(errorMessage));
+  }
 }

@@ -268,7 +268,7 @@ import { ref, reactive, onMounted, watch, nextTick } from 'vue'
 import { useQuasar } from 'quasar'
 import MapaComponent from 'src/components/MapaComponent.vue'
 import ResultadoCalculoComponent from 'src/components/ResultadoCalculoComponent.vue'
-import { calcularRotaGoogle } from 'src/services/googleDirectionsService.js'
+import { calcularRotaComPedagio } from 'src/services/googleDirectionsService.js'
 import { buscarCidadesDebounced } from 'src/services/googlePlacesService'
 import {
   BuscarTiposCarga,
@@ -419,23 +419,27 @@ const buscarRota = async () => {
     return
   }
 
-  $q.loading.show({ message: 'Calculando rota...' })
+  $q.loading.show({ message: 'Calculando rota e pedágios...' })
 
   try {
-    const response = await calcularRotaGoogle(form.origem, form.destino)
-    if (mapComponentRef.value) {
-      mapComponentRef.value.setDirections(response)
-    }
-    const rota = response.routes[0].legs[0]
-    if (rota.distance && rota.distance.value) {
-      const distanciaEmKm = Math.round(rota.distance.value / 1000)
+    const data = await calcularRotaComPedagio(form.origem, form.destino)
+    if (data && data.ok) {
+      const rota = data.route
 
+      if (mapComponentRef.value && rota.polyline.encodedPolyline) {
+        mapComponentRef.value.desenharRotaPorPolyline(rota.polyline.encodedPolyline)
+      }
+
+      const distanciaEmKm = Math.round(rota.distanceMeters / 1000)
       form.distancia = distanciaEmKm
       form.kmCarregado = distanciaEmKm
 
+      form.pedagio = rota.tollInfo.cost.toFixed(2)
+
+      const duracaoFormatada = formatarDuracao(rota.duration)
       resultadoRota.value = {
-        distancia: rota.distance.text,
-        duracao: rota.duration.text,
+        distancia: `${distanciaEmKm} km`,
+        duracao: duracaoFormatada,
       }
     }
   } catch (error) {
@@ -444,6 +448,29 @@ const buscarRota = async () => {
   } finally {
     $q.loading.hide()
   }
+}
+
+const formatarDuracao = (duracaoString) => {
+  if (!duracaoString || !duracaoString.endsWith('s')) {
+    return '--'
+  }
+  const totalSegundos = parseInt(duracaoString, 10)
+  if (isNaN(totalSegundos)) {
+    return '--'
+  }
+  if (totalSegundos < 60) {
+    return 'Menos de 1m'
+  }
+  const horas = Math.floor(totalSegundos / 3600)
+  const minutos = Math.floor((totalSegundos % 3600) / 60)
+  const partes = []
+  if (horas > 0) {
+    partes.push(`${horas}h`)
+  }
+  if (minutos > 0 || horas === 0) {
+    partes.push(`${minutos}m`)
+  }
+  return partes.join(' ')
 }
 
 const limparFormulario = () => {

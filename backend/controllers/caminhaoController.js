@@ -6,7 +6,7 @@ exports.criarCaminhao = async (req, res) => {
     const dadosFormatados = {
       ...dadosRecebidos,
       consumo_km_por_l_vazio: parseFloat(dadosRecebidos.consumo_km_por_l_vazio) || null,
-      consumo_km_por_l_carregado: parseFloat(dadosRecebidos.consumo_km_por_l_carregado),
+      consumo_km_por_l_carregado: parseFloat(dadosRecebidos.consumo_km_por_l_carregado) || null,
       capacidade_ton: parseFloat(dadosRecebidos.capacidade_ton) || null,
       ano: parseInt(dadosRecebidos.ano, 10) || null,
       quantidade_eixos: parseInt(dadosRecebidos.quantidade_eixos, 10) || null
