@@ -427,7 +427,7 @@ const buscarRota = async () => {
       const rota = data.route
 
       if (mapComponentRef.value && rota.polyline.encodedPolyline) {
-        mapComponentRef.value.desenharRotaPorPolyline(rota.polyline.encodedPolyline)
+        await mapComponentRef.value.desenharRotaPorPolyline(rota.polyline.encodedPolyline)
       }
 
       const distanciaEmKm = Math.round(rota.distanceMeters / 1000)

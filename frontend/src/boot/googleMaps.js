@@ -21,7 +21,7 @@ export default boot(() => {
     const script = document.createElement('script')
 
 
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&loading=async&libraries=geometry`
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&loading=async&libraries=geometry,marker`
     script.async = true
     script.defer = true
 
