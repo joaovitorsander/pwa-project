@@ -220,7 +220,33 @@
                 outlined
                 color="green-6"
                 prefix="R$"
-              />
+                hint="Valor estimado (editável)"
+              >
+                <template v-slot:append>
+                  <q-btn
+                    v-if="valorPedagioFoiEditado"
+                    icon="restart_alt"
+                    flat
+                    round
+                    dense
+                    color="orange-8"
+                    @click="resetarPedagio"
+                  >
+                    <q-tooltip class="bg-orange-9 text-body2">Restaurar valor estimado</q-tooltip>
+                  </q-btn>
+
+                  <q-icon name="info" color="grey-7" class="cursor-pointer">
+                    <q-tooltip
+                      anchor="top middle"
+                      self="bottom middle"
+                      :offset="[10, 10]"
+                      class="bg-grey-9 text-body2 shadow-2"
+                    >
+                      {{ mensagemHintDadosPedagio }}
+                    </q-tooltip>
+                  </q-icon>
+                </template>
+              </q-input>
             </div>
             <div class="col-12 col-md-4">
               <q-input
@@ -264,7 +290,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch, nextTick } from 'vue'
+import { ref, reactive, onMounted, watch, nextTick, computed } from 'vue'
 import { useQuasar } from 'quasar'
 import MapaComponent from 'src/components/MapaComponent.vue'
 import ResultadoCalculoComponent from 'src/components/ResultadoCalculoComponent.vue'
@@ -302,6 +328,7 @@ const formVazio = {
 
 const form = reactive({ ...formVazio })
 const resultadoRota = ref(null)
+const dadosPedagio = ref(null)
 const caminhoes = ref([])
 const tiposCarga = ref([])
 const carregandoDados = ref(true)
@@ -415,6 +442,23 @@ const buscarRota = async () => {
     $q.notify({
       type: 'negative',
       message: 'Por favor, preencha a origem e o destino para buscar a rota.',
+      icon: 'warning',
+    })
+    return
+  }
+
+  if (!form.veiculo) {
+    $q.notify({
+      type: 'warning',
+      message: 'Por favor, selecione um veículo primeiro.',
+    })
+    return
+  }
+
+  if (!form.quantidade_eixos || form.quantidade_eixos <= 0) {
+    $q.notify({
+      type: 'warning',
+      message: 'A quantidade de eixos do veículo deve ser informada e maior que zero.',
     })
     return
   }
@@ -422,7 +466,7 @@ const buscarRota = async () => {
   $q.loading.show({ message: 'Calculando rota e pedágios...' })
 
   try {
-    const data = await calcularRotaComPedagio(form.origem, form.destino)
+    const data = await calcularRotaComPedagio(form.origem, form.destino, form.quantidade_eixos)
     if (data && data.ok) {
       const rota = data.route
 
@@ -435,6 +479,7 @@ const buscarRota = async () => {
       form.kmCarregado = distanciaEmKm
 
       form.pedagio = rota.tollInfo.cost.toFixed(2)
+      dadosPedagio.value = data.route.tollInfo
 
       const duracaoFormatada = formatarDuracao(rota.duration)
       resultadoRota.value = {
@@ -473,9 +518,46 @@ const formatarDuracao = (duracaoString) => {
   return partes.join(' ')
 }
 
+const mensagemHintDadosPedagio = computed(() => {
+  if (!dadosPedagio.value || !dadosPedagio.value.baseCost) {
+    return 'Busque uma rota para ver o detalhe do cálculo.'
+  }
+
+  const base = dadosPedagio.value.baseCost.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  })
+  const eixos = dadosPedagio.value.eixos
+
+  return `Cálculo: ${base} (tarifa base) x ${eixos} eixos`
+})
+
+const valorPedagioFoiEditado = computed(() => {
+  if (!dadosPedagio.value) {
+    return false
+  }
+
+  const diff = Math.abs(Number(form.pedagio) - dadosPedagio.value.cost)
+  return diff > 0.01
+})
+
+const resetarPedagio = () => {
+  if (dadosPedagio.value) {
+    form.pedagio = dadosPedagio.value.cost.toFixed(2)
+    $q.notify({
+      message: 'Valor do pedágio restaurado para a estimativa da API.',
+      icon: 'history',
+      color: 'info',
+      position: 'top',
+      timeout: 1500,
+    })
+  }
+}
+
 const limparFormulario = () => {
   Object.assign(form, formVazio)
   resultadoRota.value = null
+  dadosPedagio.value = null
   if (mapComponentRef.value) {
     mapComponentRef.value.clearDirections()
   }

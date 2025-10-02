@@ -1,18 +1,20 @@
 const axios = require('axios');
 
 exports.calcularRotaComPedagio = async (req, res) => {
-  const { origin, destination } = req.body;
+  const { origem, destino, quantidade_eixos } = req.body;
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
 
-  if (!origin || !destination) {
+  if (!origem || !destino) {
     return res.status(400).json({ message: 'Origem e destino são obrigatórios.' });
   }
+
+  const eixosParaCalculo = Number(quantidade_eixos) || 1;
 
   const url = 'https://routes.googleapis.com/directions/v2:computeRoutes';
 
   const requestBody = {
-    origin: { address: origin },
-    destination: { address: destination },
+    origin: { address: origem },
+    destination: { address: destino },
     travelMode: 'DRIVE',
     extraComputations: ['TOLLS'],
     routeModifiers: {
@@ -39,10 +41,11 @@ exports.calcularRotaComPedagio = async (req, res) => {
     }
 
     const tollInfo = rotaPrincipal.travelAdvisory?.tollInfo;
-    const custoTotalPedagio = tollInfo?.estimatedPrice.reduce((acc, price) => {
+    const custoBasePedagio  = tollInfo?.estimatedPrice.reduce((acc, price) => {
         return acc + (parseFloat(price.units) || 0) + (price.nanos / 1_000_000_000 || 0);
     }, 0);
 
+    const custoTotalEstimado = custoBasePedagio * eixosParaCalculo;
 
     res.status(200).json({
       ok: true,
@@ -51,7 +54,9 @@ exports.calcularRotaComPedagio = async (req, res) => {
         duration: rotaPrincipal.duration,
         polyline: rotaPrincipal.polyline,
         tollInfo: {
-          cost: custoTotalPedagio,
+          cost: custoTotalEstimado,
+          baseCost: custoBasePedagio,
+          eixos: eixosParaCalculo,
           currency: tollInfo?.estimatedPrice[0]?.currencyCode || 'BRL'
         }
       },

@@ -39,8 +39,8 @@ import { api } from 'src/boot/axios';
   });
 }*/
 
-export async function calcularRotaComPedagio(origin, destination) {
-  if (!origin || !destination) {
+export async function calcularRotaComPedagio(origem, destino, quantidade_eixos) {
+  if (!origem || !destino) {
     const message = 'Origem e destino precisam ser informados.';
     Notify.create({ type: 'negative', message });
     return Promise.reject(new Error(message));
@@ -48,8 +48,9 @@ export async function calcularRotaComPedagio(origin, destination) {
 
   try {
     const response = await api.post('/routes/calcular', {
-      origin: origin,
-      destination: destination,
+      origem: origem,
+      destino: destino,
+      quantidade_eixos:quantidade_eixos,
     });
     if (response.data && response.data.ok) {
       return response.data;
