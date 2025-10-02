@@ -1,17 +1,43 @@
 const db = require("../db");
 
+const ufMap = {
+  'Acre': 'AC', 'Alagoas': 'AL', 'Amapá': 'AP', 'Amazonas': 'AM',
+  'Bahia': 'BA', 'Ceará': 'CE', 'Distrito Federal': 'DF', 'Espírito Santo': 'ES',
+  'Goiás': 'GO', 'Maranhão': 'MA', 'Mato Grosso': 'MT', 'Mato Grosso do Sul': 'MS',
+  'Minas Gerais': 'MG', 'Pará': 'PA', 'Paraíba': 'PB', 'Paraná': 'PR',
+  'Pernambuco': 'PE', 'Piauí': 'PI', 'Rio de Janeiro': 'RJ', 'Rio Grande do Norte': 'RN',
+  'Rio Grande do Sul': 'RS', 'Rondônia': 'RO', 'Roraima': 'RR', 'Santa Catarina': 'SC',
+  'São Paulo': 'SP', 'Sergipe': 'SE', 'Tocantins': 'TO'
+};
+
 function parseLocalidade(localidadeStr) {
-  if (!localidadeStr || typeof localidadeStr != 'string') {
+  if (!localidadeStr || typeof localidadeStr !== 'string') {
     return { cidade: null, uf: null };
   }
 
   const partes = localidadeStr.split(',').map(p => p.trim());
 
-  if (partes.length < 2) {
-    return { cidade: partes[0] || null, uf: null }; 
+  if (partes[partes.length - 1].toLowerCase() === 'brasil') {
+    partes.pop();
   }
 
-  return { cidade: partes[0], uf: partes[1] };
+  if (partes.length === 0) {
+    return { cidade: null, uf: null };
+  }
+
+  const cidade = partes[0].split('-')[0].trim();
+
+  const infoEstado = partes[partes.length - 1];
+  let uf = infoEstado; 
+
+  if (infoEstado.includes('-')) {
+    const subPartes = infoEstado.split('-').map(sp => sp.trim());
+    uf = subPartes[subPartes.length - 1];
+  }
+
+  const ufFinal = ufMap[uf] || uf;
+
+  return { cidade, uf: ufFinal };
 }
 
 async function buscarCoeficientesAntt(tipoCargaId, quantidadeEixos) {
@@ -83,7 +109,6 @@ function calcularCustoFrete(dadosForm, dadosCaminhao, coeficientesAntt) {
     valorCCAplicado: valorCC.toFixed(2)
   };
 };
-
 
 async function inserirCalculo(dadosParaSalvar) {
   const {
