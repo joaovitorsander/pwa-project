@@ -141,14 +141,14 @@
             <div class="row items-center q-gutter-sm q-mb-sm">
               <q-icon name="place" />
               <div class="text-subtitle1 text-weight-bold text-capitalize">
-                {{ item.origem }} → {{ item.destino }}
+                {{ item.origem_cidade }} → {{ item.destino_cidade }}
               </div>
             </div>
 
             <div class="row q-col-gutter-md">
               <div class="col-auto">
                 <span class="text-grey-7">Distância: </span>
-                <span class="text-weight-medium"> {{ formatarKm(item.distancia_km) }}</span>
+                <span class="text-weight-medium"> {{ formatarKm(item.km_total) }}</span>
               </div>
               <div class="col-auto">
                 <span class="text-grey-7">Veículo: </span>
@@ -168,14 +168,21 @@
 
             <div class="row items-center q-gutter-sm q-mt-sm">
               <q-icon name="event" />
-              <div class="text-caption">{{ formatData(item.data_calculo) }}</div>
+              <div class="text-caption">{{ formatData(item.created_at) }}</div>
               <q-space />
-              <div class="text-subtitle1 text-positive">{{ formatBRL(item.valor_total) }}</div>
+              <div class="text-subtitle1 text-positive">
+                {{ formatBRL(item.valor_frete_negociado) }}
+              </div>
             </div>
           </div>
 
           <div>
-            <q-btn flat round dense color="red-5" icon="delete" @click="confirmarExclusao(item)" />
+            <q-btn flat round dense color="primary" icon="upload" @click="carregarCalculo(item)">
+              <q-tooltip class="bg-gray"> Carregar este cálculo na calculadora </q-tooltip>
+            </q-btn>
+            <q-btn flat round dense color="red-5" icon="delete" @click="confirmarExclusao(item)">
+              <q-tooltip class="bg-gray"> Excluir este cálculo </q-tooltip>
+            </q-btn>
           </div>
         </div>
       </q-card-section>
@@ -191,9 +198,13 @@
 <script setup>
 import { ref, computed, reactive, onMounted, watch } from 'vue'
 import { useQuasar, date } from 'quasar'
+import { useRouter } from 'vue-router'
+import { useCalculoStore } from 'src/stores/calculo-store'
 import * as historicoService from 'src/services/historicoService'
 
 const $q = useQuasar()
+const router = useRouter()
+const calculoStore = useCalculoStore()
 
 const carregando = ref(false)
 const historico = ref([])
@@ -226,7 +237,7 @@ const placeholderPesquisa = computed(() => {
 })
 
 const valorTotal = computed(() =>
-  historico.value.reduce((acc, h) => acc + (Number(h.valor_total) || 0), 0),
+  historico.value.reduce((acc, h) => acc + (Number(h.valor_frete_negociado) || 0), 0),
 )
 
 const valorMedio = computed(() =>
@@ -324,6 +335,19 @@ function confirmarExclusao(item) {
       $q.notify({ type: 'negative', message: res?.message || 'Falha ao excluir.' })
     }
   })
+}
+
+function carregarCalculo(calculo) {
+  $q.loading.show({ message: 'Carregando dados do cálculo...' })
+  try {
+    calculoStore.setCalculoParaCarregar(calculo)
+    router.push({ name: 'CalcularFrete' })
+  } catch (error) {
+    console.error('Erro ao tentar carregar cálculo:', error)
+    $q.notify({ type: 'negative', message: 'Não foi possível carregar o cálculo.' })
+  } finally {
+    $q.loading.hide()
+  }
 }
 
 function formatBRL(v = 0) {

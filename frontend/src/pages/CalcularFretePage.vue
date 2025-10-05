@@ -302,11 +302,13 @@ import {
   salvarFreteCalculado,
 } from 'src/services/calcularFreteService'
 import { buscarCaminhoes } from 'src/services/caminhaoService'
+import { useCalculoStore } from 'src/stores/calculo-store'
 
 const mapComponentRef = ref(null)
 const $q = useQuasar()
 
 const formRef = ref(null)
+const calculoStore = useCalculoStore()
 
 const formVazio = {
   origem: '',
@@ -495,6 +497,32 @@ const buscarRota = async () => {
   }
 }
 
+function preencherFormulario(calculoCarregado) {
+  // Agora os nomes correspondem diretamente às colunas do banco
+  form.origem = `${calculoCarregado.origem_cidade}, ${calculoCarregado.origem_uf}`
+  form.destino = `${calculoCarregado.destino_cidade}, ${calculoCarregado.destino_uf}`
+  form.distancia = calculoCarregado.km_total
+  form.veiculo = calculoCarregado.caminhao_id
+  form.tipoCarga = calculoCarregado.tipo_carga_id
+  form.precoCombustivel = calculoCarregado.preco_combustivel_l
+  form.pedagio = calculoCarregado.pedagios_total
+  form.quantidade_eixos = calculoCarregado.quantidade_eixos
+  form.consumo_km_por_l_vazio = calculoCarregado.consumo_km_por_l_vazio
+  form.consumo_km_por_l_carregado = calculoCarregado.consumo_km_por_l_carregado
+  form.toneladaCarga = calculoCarregado.tonelada_carga
+  form.kmCarregado = calculoCarregado.km_carregado
+  form.kmVazio = calculoCarregado.km_vazio
+  form.valor_tonelada = calculoCarregado.valor_frete_negociado / calculoCarregado.tonelada_carga
+  form.commissao_motorista = calculoCarregado.comissao_motorista
+
+  $q.notify({
+    message: 'Cálculo carregado. Clique em "Buscar rota" para visualizar o mapa.',
+    icon: 'history',
+    color: 'info',
+    position: 'top',
+  })
+}
+
 const formatarDuracao = (duracaoString) => {
   if (!duracaoString || !duracaoString.endsWith('s')) {
     return '--'
@@ -570,6 +598,12 @@ const limparFormulario = () => {
 }
 
 onMounted(async () => {
+  if (calculoStore.calculoParaCarregar) {
+    preencherFormulario(calculoStore.calculoParaCarregar)
+
+    calculoStore.limparCalculoParaCarregar()
+  }
+
   carregandoDados.value = true
   await Promise.all([carregarTiposCarga(), carregarCaminhoes()])
   carregandoDados.value = false

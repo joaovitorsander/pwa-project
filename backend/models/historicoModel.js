@@ -3,20 +3,38 @@ const db = require("../db");
 async function buscarHistorico(filtros = {}) {
   let baseQuery = `
     SELECT
-      c.id,
-      c.origem_cidade AS origem,
-      c.destino_cidade AS destino,
-      c.km_total AS distancia_km,
-      cam.modelo AS veiculo_modelo,
-      cam.placa,
-      c.consumo_km_por_l_carregado AS consumo_km_l,
-      tc.nome AS tipo_carga,
-      c.created_at AS data_calculo,
-      c.valor_frete_negociado AS valor_total
+      caminhoes.modelo AS veiculo_modelo,
+      caminhoes.placa,
+      tipos_carga.nome AS tipo_carga,
+      calculos.id,                         
+      calculos.caminhao_id,             
+      calculos.created_at,              
+      calculos.origem_uf,                 
+      calculos.origem_cidade,              
+      calculos.destino_uf,                 
+      calculos.destino_cidade,             
+      calculos.km_total,                   
+      calculos.quantidade_eixos,           
+      calculos.tipo_carga_id,              
+      calculos.tipo_transporte_id,         
+      calculos.consumo_km_por_l_vazio,     
+      calculos.consumo_km_por_l_carregado, 
+      calculos.preco_combustivel_l,        
+      calculos.pedagios_total,             
+      calculos.outros_custos_total,        
+      calculos.antt_tabela_id,             
+      calculos.valor_ccd_aplicado,         
+      calculos.valor_cc_aplicado,          
+      calculos.valor_minimo_antt,          
+      calculos.valor_frete_negociado,     
+      calculos.custo_combustivel,          
+      calculos.custo_total,                
+      calculos.lucro_estimado,             
+      calculos.viavel
     FROM
-      calculos c
-      LEFT JOIN caminhoes cam ON c.caminhao_id = cam.id
-      LEFT JOIN tipos_carga tc ON c.tipo_carga_id = tc.id
+      calculos
+      LEFT JOIN caminhoes ON calculos.caminhao_id = caminhoes.id
+      LEFT JOIN tipos_carga ON calculos.tipo_carga_id = tipos_carga.id
   `;
 
   const whereClauses = [];
@@ -25,49 +43,49 @@ async function buscarHistorico(filtros = {}) {
   
   if (filtros.uf_origem) {
     params.push(`%${filtros.uf_origem}%`);
-    whereClauses.push(`c.origem_uf ILIKE $${params.length}`);
+    whereClauses.push(`calculos.origem_uf ILIKE $${params.length}`);
   }
 
   if (filtros.uf_destino) {
     params.push(`%${filtros.uf_destino}%`);
-    whereClauses.push(`c.destino_uf ILIKE $${params.length}`);
+    whereClauses.push(`calculos.destino_uf ILIKE $${params.length}`);
   }
 
   if (filtros.cidade_origem) {
     params.push(`%${filtros.cidade_origem}%`);
-    whereClauses.push(`c.origem_cidade ILIKE $${params.length}`);
+    whereClauses.push(`calculos.origem_cidade ILIKE $${params.length}`);
   }
 
   if (filtros.cidade_destino) {
     params.push(`%${filtros.cidade_destino}%`);
-    whereClauses.push(`c.destino_cidade ILIKE $${params.length}`);
+    whereClauses.push(`calculos.destino_cidade ILIKE $${params.length}`);
   }
   
   if (filtros.placa) {
     params.push(`%${filtros.placa}%`);
-    whereClauses.push(`cam.placa ILIKE $${params.length}`);
+    whereClauses.push(`caminhoes.placa ILIKE $${params.length}`);
   }
 
   if (filtros.caminhao) {
     params.push(`%${filtros.caminhao}%`);
-    whereClauses.push(`cam.modelo ILIKE $${params.length}`);
+    whereClauses.push(`caminhoes.modelo ILIKE $${params.length}`);
   }
 
   if (filtros.data_de) {
     params.push(formatarDataParaSQL(filtros.data_de));
-    whereClauses.push(`c.created_at::date >= $${params.length}`);
+    whereClauses.push(`calculos.created_at::date >= $${params.length}`);
   }
 
   if (filtros.data_ate) {
     params.push(formatarDataParaSQL(filtros.data_ate));
-    whereClauses.push(`c.created_at::date <= $${params.length}`);
+    whereClauses.push(`calculos.created_at::date <= $${params.length}`);
   }
 
   if (whereClauses.length > 0) {
     baseQuery += ` WHERE ${whereClauses.join(" AND ")}`;
   }
 
-  baseQuery += ` ORDER BY c.created_at DESC`;
+  baseQuery += ` ORDER BY calculos.created_at DESC`;
 
   const { rows } = await db.query(baseQuery, params);
   return rows;
