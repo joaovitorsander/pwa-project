@@ -59,6 +59,8 @@ exports.calcularFrete = async (req, res) => {
 };
 
 exports.salvarFreteCalculado = async (req, res) => {
+    console.log('--- CONTROLLER: DADOS RECEBIDOS ---');
+    console.log(req.body);
   try {
     const calculoCompleto = req.body;
 

@@ -424,9 +424,11 @@ const calcularFrete = async () => {
 
 const salvarCalculo = async () => {
   const calculoCompleto = {
-    ...form,
     ...resultadoCalculo.value,
+    ...form,
   }
+
+  console.log('Dados que estão sendo enviados para o backend:', calculoCompleto);
 
   const result = await salvarFreteCalculado(calculoCompleto)
 
@@ -498,7 +500,6 @@ const buscarRota = async () => {
 }
 
 function preencherFormulario(calculoCarregado) {
-  // Agora os nomes correspondem diretamente às colunas do banco
   form.origem = `${calculoCarregado.origem_cidade}, ${calculoCarregado.origem_uf}`
   form.destino = `${calculoCarregado.destino_cidade}, ${calculoCarregado.destino_uf}`
   form.distancia = calculoCarregado.km_total
@@ -509,11 +510,11 @@ function preencherFormulario(calculoCarregado) {
   form.quantidade_eixos = calculoCarregado.quantidade_eixos
   form.consumo_km_por_l_vazio = calculoCarregado.consumo_km_por_l_vazio
   form.consumo_km_por_l_carregado = calculoCarregado.consumo_km_por_l_carregado
-  form.toneladaCarga = calculoCarregado.tonelada_carga
-  form.kmCarregado = calculoCarregado.km_carregado
-  form.kmVazio = calculoCarregado.km_vazio
-  form.valor_tonelada = calculoCarregado.valor_frete_negociado / calculoCarregado.tonelada_carga
-  form.commissao_motorista = calculoCarregado.comissao_motorista
+  form.toneladaCarga = calculoCarregado.toneladas_carga;
+  form.kmCarregado = calculoCarregado.km_rodado_carregado;
+  form.kmVazio = calculoCarregado.km_rodado_vazio;
+  form.valor_tonelada = calculoCarregado.valor_por_tonelada;
+  form.commissao_motorista = calculoCarregado.comissao_motorista;
 
   $q.notify({
     message: 'Cálculo carregado. Clique em "Buscar rota" para visualizar o mapa.',

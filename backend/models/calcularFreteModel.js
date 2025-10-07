@@ -111,6 +111,8 @@ function calcularCustoFrete(dadosForm, dadosCaminhao, coeficientesAntt) {
 };
 
 async function inserirCalculo(dadosParaSalvar) {
+  console.log('--- MODEL: DADOS RECEBIDOS ANTES DA DESESTRUTURAÇÃO ---'); // Log 2
+  console.log(dadosParaSalvar);
   const {
     origem: origem,
     destino: destino,
@@ -120,6 +122,11 @@ async function inserirCalculo(dadosParaSalvar) {
     precoCombustivel: preco_combustivel_l,
     pedagio: pedagios_total,
 
+    toneladaCarga: toneladas_carga,
+    kmCarregado: km_rodado_carregado,
+    kmVazio: km_rodado_vazio,
+    valor_tonelada: valor_por_tonelada,
+    commissao_motorista: comissao_motorista,
 
     quantidade_eixos: quantidade_eixos,
     consumo_km_por_l_vazio: consumo_km_por_l_vazio,
@@ -158,18 +165,24 @@ async function inserirCalculo(dadosParaSalvar) {
       consumo_km_por_l_carregado,   -- $11
       preco_combustivel_l,          -- $12
       pedagios_total,               -- $13
-      antt_tabela_id,               -- $14
-      valor_ccd_aplicado,           -- $15
-      valor_cc_aplicado,            -- $16
-      valor_minimo_antt,            -- $17
-      valor_frete_negociado,        -- $18
-      custo_combustivel,            -- $19
-      custo_total,                  -- $20
-      lucro_estimado,               -- $21
-      viavel                        -- $22
+      toneladas_carga,              -- $14
+      km_rodado_carregado,          -- $15
+      km_rodado_vazio,              -- $16
+      valor_por_tonelada,           -- $17
+      comissao_motorista,           -- $18
+      antt_tabela_id,               -- $19
+      valor_ccd_aplicado,           -- $20
+      valor_cc_aplicado,            -- $21
+      valor_minimo_antt,            -- $22
+      valor_frete_negociado,        -- $23
+      custo_combustivel,            -- $24
+      custo_total,                  -- $25
+      lucro_estimado,               -- $26
+      viavel                        -- $27
     ) VALUES (
       $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
-      $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22
+      $11, $12, $13, $14, $15, $16, $17, $18, 
+      $19, $20, $21, $22, $23, $24, $25, $26, $27
     )
     RETURNING *;
   `;
@@ -183,20 +196,27 @@ async function inserirCalculo(dadosParaSalvar) {
     km_total,                     // $6
     quantidade_eixos,             // $7
     tipo_carga_id,                // $8
-    1,                            // $9
+    1,                            // $9  (tipo_transporte_id)
     consumo_km_por_l_vazio,       // $10
     consumo_km_por_l_carregado,   // $11
     preco_combustivel_l,          // $12
     pedagios_total,               // $13
-    1,                            // $14
-    valor_ccd_aplicado,           // $15
-    valor_cc_aplicado,            // $16
-    valor_minimo_antt,            // $17
-    valor_frete_negociado,        // $18
-    custo_combustivel,            // $19
-    custo_total,                  // $20
-    lucro_estimado,               // $21
-    viavel                        // $22
+    
+    toneladas_carga,              // $14
+    km_rodado_carregado,          // $15
+    km_rodado_vazio,              // $16
+    valor_por_tonelada,           // $17
+    comissao_motorista,           // $18
+
+    1,                            // $19 (antt_tabela_id)
+    valor_ccd_aplicado,           // $20
+    valor_cc_aplicado,            // $21
+    valor_minimo_antt,            // $22
+    valor_frete_negociado,        // $23
+    custo_combustivel,            // $24
+    custo_total,                  // $25
+    lucro_estimado,               // $26
+    viavel                        // $27
   ];
 
   const { rows } = await db.query(query, values);

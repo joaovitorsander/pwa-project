@@ -68,7 +68,6 @@ CREATE TABLE calculos (
   caminhao_id             INT REFERENCES caminhoes(id) ON DELETE SET NULL,
   created_at              TIMESTAMPTZ NOT NULL DEFAULT now(),
 
-  -- Parâmetros do cenário
   origem_uf                  CHAR(2),
   origem_cidade              TEXT,
   destino_uf                 CHAR(2),
@@ -84,10 +83,14 @@ CREATE TABLE calculos (
   pedagios_total             NUMERIC(12,2),
   outros_custos_total        NUMERIC(12,2),
 
-  -- ANTT usada
+  toneladas_carga          NUMERIC(10, 3),
+  km_rodado_carregado      NUMERIC(10, 2),
+  km_rodado_vazio          NUMERIC(10, 2),
+  valor_por_tonelada       NUMERIC(12, 2),
+  comissao_motorista       SMALLINT,
+
   antt_tabela_id             INT NOT NULL REFERENCES antt_tabelas(id),
 
-  -- Coeficientes/Resultados congelados
   valor_ccd_aplicado         NUMERIC(12,4),
   valor_cc_aplicado          NUMERIC(12,2),
   valor_minimo_antt          NUMERIC(12,2),
@@ -97,17 +100,6 @@ CREATE TABLE calculos (
   custo_total                NUMERIC(12,2),
   lucro_estimado             NUMERIC(12,2),
   viavel                     BOOLEAN
-);
-
--- 7) Itens de despesa (opcional)
-CREATE TABLE calculo_despesas (
-  id          BIGSERIAL PRIMARY KEY,
-  calculo_id  BIGINT NOT NULL REFERENCES calculos(id) ON DELETE CASCADE,
-  categoria   TEXT NOT NULL,  -- 'Combustível','Pedágio','Manutenção', ...
-  descricao   TEXT,
-  quantidade  NUMERIC(10,3),
-  valor_unit  NUMERIC(12,2) NOT NULL,
-  total       NUMERIC(12,2) GENERATED ALWAYS AS (COALESCE(quantidade,1) * valor_unit) STORED
 );
 
 
